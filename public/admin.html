@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Admin Panel — Wedding</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="data.js"></script>
+  <style>
+    body{font-family:system-ui,sans-serif;background:#111;color:#e5e5e5}
+    .card{background:#1a1a1a;border:1px solid #333;border-radius:12px;padding:24px;margin-bottom:16px}
+    .field label{display:block;font-size:12px;color:#888;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+    .field input,.field textarea,.field select{width:100%;background:#222;border:1px solid #444;border-radius:8px;padding:10px 12px;color:#fff;font-size:14px;outline:none;transition:border .2s}
+    .field input:focus,.field textarea:focus{border-color:#c9a84c}
+    .field textarea{resize:vertical;min-height:80px}
+    .field{margin-bottom:16px}
+    .toggle{position:relative;width:48px;height:26px;background:#333;border-radius:13px;cursor:pointer;transition:background .3s}
+    .toggle.on{background:#c9a84c}
+    .toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:transform .3s}
+    .toggle.on::after{transform:translateX(22px)}
+    .btn-save{background:#c9a84c;color:#111;padding:12px 32px;border:none;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer;letter-spacing:.04em;transition:all .2s}
+    .btn-save:hover{background:#b8952f;transform:translateY(-1px)}
+    .btn-danger{background:#dc2626;color:#fff;padding:8px 16px;border:none;border-radius:6px;font-size:12px;cursor:pointer}
+    .btn-secondary{background:#333;color:#ccc;padding:8px 16px;border:1px solid #555;border-radius:6px;font-size:12px;cursor:pointer}
+    .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+    .section-header h3{font-size:18px;font-weight:600;color:#c9a84c}
+    .gallery-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    .gallery-item{position:relative;border-radius:8px;overflow:hidden;aspect-ratio:1;background:#222}
+    .gallery-item img{width:100%;height:100%;object-fit:cover}
+    .gallery-item .remove{position:absolute;top:6px;right:6px;background:rgba(220,38,38,.9);color:#fff;border:none;border-radius:50%;width:24px;height:24px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+    .toast{position:fixed;bottom:24px;right:24px;background:#16a34a;color:#fff;padding:14px 28px;border-radius:10px;font-weight:500;opacity:0;transform:translateY(20px);transition:all .3s;z-index:999;pointer-events:none}
+    .toast.show{opacity:1;transform:translateY(0)}
+    .nav-link{color:#888;text-decoration:none;padding:8px 16px;border-radius:6px;transition:all .2s;font-size:14px}
+    .nav-link:hover,.nav-link.active{color:#c9a84c;background:#222}
+  </style>
+</head>
+<body>
+  <!-- TOPBAR -->
+  <div style="background:#161616;border-bottom:1px solid #333;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50">
+    <div style="display:flex;align-items:center;gap:16px">
+      <span style="font-size:20px;font-weight:700;color:#c9a84c">✦</span>
+      <span style="font-weight:600;font-size:16px">Wedding Admin</span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <a href="index.html" target="_blank" class="nav-link">↗ View Site</a>
+      <button onclick="resetAll()" class="btn-secondary">Reset to Default</button>
+      <button onclick="logout()" class="btn-secondary">Logout</button>
+    </div>
+  </div>
+
+  <div style="max-width:860px;margin:0 auto;padding:32px 20px">
+    <!-- COUPLE NAMES -->
+    <div class="card" id="sec-couple">
+      <div class="section-header"><h3>💍 Couple Names</h3></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="field"><label>Name 1</label><input id="f-name1"/></div>
+        <div class="field"><label>Name 2</label><input id="f-name2"/></div>
+      </div>
+    </div>
+
+    <!-- HERO -->
+    <div class="card" id="sec-hero">
+      <div class="section-header"><h3>🖼 Hero Section</h3><div class="toggle on" data-section="hero" onclick="toggleSection(this)"></div></div>
+      <div class="field"><label>Subtitle</label><input id="f-hero-subtitle"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="field"><label>Date Text</label><input id="f-hero-date"/></div>
+        <div class="field"><label>Location Text</label><input id="f-hero-location"/></div>
+      </div>
+      <div class="field"><label>Background Image URL</label><input id="f-hero-image"/></div>
+      <div class="field"><label>Or Upload Image</label><input type="file" accept="image/*" onchange="handleImageUpload(this,'f-hero-image')"/></div>
+    </div>
+
+    <!-- INVITATION CARD -->
+    <div class="card" id="sec-invitation">
+      <div class="section-header"><h3>💌 Invitation Card</h3><div class="toggle on" data-section="invitationCard" onclick="toggleSection(this)"></div></div>
+      <div class="field"><label>Card Image URL</label><input id="f-inv-image"/></div>
+      <div class="field"><label>Or Upload Card Image</label><input type="file" accept="image/*" onchange="handleImageUpload(this,'f-inv-image')"/></div>
+    </div>
+
+    <!-- SAVE THE DATE -->
+    <div class="card">
+      <div class="section-header"><h3>📅 Save The Date</h3><div class="toggle on" data-section="saveTheDate" onclick="toggleSection(this)"></div></div>
+      <div class="field"><label>Heading</label><input id="f-std-heading"/></div>
+      <div class="field"><label>Quote / Description</label><textarea id="f-std-quote"></textarea></div>
+    </div>
+
+    <!-- COUNTDOWN -->
+    <div class="card">
+      <div class="section-header"><h3>⏰ Countdown Timer</h3><div class="toggle on" data-section="countdown" onclick="toggleSection(this)"></div></div>
+      <div class="field"><label>Target Date &amp; Time</label><input type="datetime-local" id="f-cd-date"/></div>
+      <div class="field"><label>Heading</label><input id="f-cd-heading"/></div>
+    </div>
+
+    <!-- OUR STORY -->
+    <div class="card">
+      <div class="section-header"><h3>📖 Our Story</h3><div class="toggle on" data-section="story" onclick="toggleSection(this)"></div></div>
+      <div class="field"><label>Heading</label><input id="f-story-heading"/></div>
+      <div class="field"><label>Paragraph 1</label><textarea id="f-story-p1"></textarea></div>
+      <div class="field"><label>Paragraph 2</label><textarea id="f-story-p2"></textarea></div>
+      <div class="field"><label>Image URL</label><input id="f-story-image"/></div>
+      <div class="field"><label>Or Upload Image</label><input type="file" accept="image/*" onchange="handleImageUpload(this,'f-story-image')"/></div>
+    </div>
+
+    <!-- EVENTS -->
+    <div class="card">
+      <div class="section-header"><h3>🎉 Event Details</h3><div class="toggle on" data-section="events" onclick="toggleSection(this)"></div></div>
+      <p style="color:#888;font-size:13px;margin-bottom:16px">Ceremony, Reception &amp; Location info</p>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+        <div>
+          <p style="font-weight:600;margin-bottom:8px;color:#ddd">Ceremony</p>
+          <div class="field"><label>Time</label><input id="f-ev-cer-time"/></div>
+          <div class="field"><label>Venue</label><input id="f-ev-cer-venue"/></div>
+          <div class="field"><label>Location</label><input id="f-ev-cer-loc"/></div>
+        </div>
+        <div>
+          <p style="font-weight:600;margin-bottom:8px;color:#ddd">Reception</p>
+          <div class="field"><label>Time</label><input id="f-ev-rec-time"/></div>
+          <div class="field"><label>Venue</label><input id="f-ev-rec-venue"/></div>
+          <div class="field"><label>Location</label><input id="f-ev-rec-loc"/></div>
+        </div>
+        <div>
+          <p style="font-weight:600;margin-bottom:8px;color:#ddd">Location</p>
+          <div class="field"><label>Address</label><input id="f-ev-map-addr"/></div>
+          <div class="field"><label>City</label><input id="f-ev-map-city"/></div>
+          <div class="field"><label>Region</label><input id="f-ev-map-region"/></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GALLERY -->
+    <div class="card">
+      <div class="section-header"><h3>📸 Gallery</h3><div class="toggle on" data-section="gallery" onclick="toggleSection(this)"></div></div>
+      <div class="gallery-grid" id="gallery-grid"></div>
+      <div style="margin-top:16px;display:flex;gap:8px">
+        <div class="field" style="flex:1;margin:0"><input id="f-gallery-url" placeholder="Paste image URL..."/></div>
+        <button onclick="addGalleryUrl()" class="btn-secondary" style="height:42px">+ Add URL</button>
+      </div>
+      <div class="field" style="margin-top:8px"><label>Upload Images</label><input type="file" accept="image/*" multiple onchange="handleGalleryUpload(this)"/></div>
+    </div>
+
+    <!-- QUOTE -->
+    <div class="card">
+      <div class="section-header"><h3>💬 Quote</h3><div class="toggle on" data-section="quote" onclick="toggleSection(this)"></div></div>
+      <div class="field"><label>Quote Text</label><textarea id="f-quote-text"></textarea></div>
+      <div class="field"><label>Author</label><input id="f-quote-author"/></div>
+    </div>
+
+    <!-- RSVP -->
+    <div class="card">
+      <div class="section-header"><h3>✉️ RSVP</h3><div class="toggle on" data-section="rsvp" onclick="toggleSection(this)"></div></div>
+      <div class="field"><label>Heading</label><input id="f-rsvp-heading"/></div>
+      <div class="field"><label>Deadline Text</label><input id="f-rsvp-deadline"/></div>
+      <div class="field"><label>WhatsApp Number (with country code)</label><input id="f-rsvp-whatsapp" placeholder="e.g. 919876543210"/></div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="card">
+      <div class="section-header"><h3>📎 Footer</h3></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="field"><label>Date Display</label><input id="f-footer-date"/></div>
+        <div class="field"><label>Tagline</label><input id="f-footer-tagline"/></div>
+      </div>
+    </div>
+
+    <!-- SAVE -->
+    <div style="text-align:center;padding:24px 0 48px">
+      <button onclick="saveAll()" class="btn-save" style="padding:16px 64px;font-size:16px">💾 Save All Changes</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">Changes saved successfully!</div>
+
+<script>
+let data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+
+function populateForm(){
+  // Couple
+  document.getElementById('f-name1').value = data.couple.name1;
+  document.getElementById('f-name2').value = data.couple.name2;
+  // Hero
+  document.getElementById('f-hero-subtitle').value = data.hero.subtitle;
+  document.getElementById('f-hero-date').value = data.hero.date;
+  document.getElementById('f-hero-location').value = data.hero.location;
+  document.getElementById('f-hero-image').value = data.hero.image;
+  // Invitation Card
+  document.getElementById('f-inv-image').value = data.invitationCard.image;
+  // Save the date
+  document.getElementById('f-std-heading').value = data.saveTheDate.heading;
+  document.getElementById('f-std-quote').value = data.saveTheDate.quote;
+  // Countdown
+  document.getElementById('f-cd-date').value = data.countdown.targetDate.slice(0,16);
+  document.getElementById('f-cd-heading').value = data.countdown.heading;
+  // Story
+  document.getElementById('f-story-heading').value = data.story.heading;
+  document.getElementById('f-story-p1').value = data.story.paragraph1;
+  document.getElementById('f-story-p2').value = data.story.paragraph2;
+  document.getElementById('f-story-image').value = data.story.image;
+  // Events
+  document.getElementById('f-ev-cer-time').value = data.events.ceremony.time;
+  document.getElementById('f-ev-cer-venue').value = data.events.ceremony.venue;
+  document.getElementById('f-ev-cer-loc').value = data.events.ceremony.location;
+  document.getElementById('f-ev-rec-time').value = data.events.reception.time;
+  document.getElementById('f-ev-rec-venue').value = data.events.reception.venue;
+  document.getElementById('f-ev-rec-loc').value = data.events.reception.location;
+  document.getElementById('f-ev-map-addr').value = data.events.mapLocation.address;
+  document.getElementById('f-ev-map-city').value = data.events.mapLocation.city;
+  document.getElementById('f-ev-map-region').value = data.events.mapLocation.region;
+  // Quote
+  document.getElementById('f-quote-text').value = data.quote.text;
+  document.getElementById('f-quote-author').value = data.quote.author;
+  // RSVP
+  document.getElementById('f-rsvp-heading').value = data.rsvp.heading;
+  document.getElementById('f-rsvp-deadline').value = data.rsvp.deadline;
+  document.getElementById('f-rsvp-whatsapp').value = data.rsvp.whatsapp;
+  // Footer
+  document.getElementById('f-footer-date').value = data.footer.date;
+  document.getElementById('f-footer-tagline').value = data.footer.tagline;
+  // Toggles
+  document.querySelectorAll('.toggle').forEach(t=>{
+    const s = t.dataset.section;
+    if(data.sections[s]) t.classList.add('on'); else t.classList.remove('on');
+  });
+  renderGallery();
+}
+
+function collectForm(){
+  data.couple.name1 = document.getElementById('f-name1').value;
+  data.couple.name2 = document.getElementById('f-name2').value;
+  data.hero.subtitle = document.getElementById('f-hero-subtitle').value;
+  data.hero.date = document.getElementById('f-hero-date').value;
+  data.hero.location = document.getElementById('f-hero-location').value;
+  data.hero.image = document.getElementById('f-hero-image').value;
+  data.invitationCard.image = document.getElementById('f-inv-image').value;
+  data.saveTheDate.heading = document.getElementById('f-std-heading').value;
+  data.saveTheDate.quote = document.getElementById('f-std-quote').value;
+  data.countdown.targetDate = document.getElementById('f-cd-date').value + ':00';
+  data.countdown.heading = document.getElementById('f-cd-heading').value;
+  data.story.heading = document.getElementById('f-story-heading').value;
+  data.story.paragraph1 = document.getElementById('f-story-p1').value;
+  data.story.paragraph2 = document.getElementById('f-story-p2').value;
+  data.story.image = document.getElementById('f-story-image').value;
+  data.events.ceremony.time = document.getElementById('f-ev-cer-time').value;
+  data.events.ceremony.venue = document.getElementById('f-ev-cer-venue').value;
+  data.events.ceremony.location = document.getElementById('f-ev-cer-loc').value;
+  data.events.reception.time = document.getElementById('f-ev-rec-time').value;
+  data.events.reception.venue = document.getElementById('f-ev-rec-venue').value;
+  data.events.reception.location = document.getElementById('f-ev-rec-loc').value;
+  data.events.mapLocation.address = document.getElementById('f-ev-map-addr').value;
+  data.events.mapLocation.city = document.getElementById('f-ev-map-city').value;
+  data.events.mapLocation.region = document.getElementById('f-ev-map-region').value;
+  data.quote.text = document.getElementById('f-quote-text').value;
+  data.quote.author = document.getElementById('f-quote-author').value;
+  data.rsvp.heading = document.getElementById('f-rsvp-heading').value;
+  data.rsvp.deadline = document.getElementById('f-rsvp-deadline').value;
+  data.rsvp.whatsapp = document.getElementById('f-rsvp-whatsapp').value;
+  data.footer.date = document.getElementById('f-footer-date').value;
+  data.footer.tagline = document.getElementById('f-footer-tagline').value;
+}
+
+function toggleSection(el){
+  el.classList.toggle('on');
+  data.sections[el.dataset.section] = el.classList.contains('on');
+}
+
+function renderGallery(){
+  const grid = document.getElementById('gallery-grid');
+  grid.innerHTML = data.gallery.images.map((url,i)=>
+    `<div class="gallery-item"><img src="${url}" alt="Gallery ${i+1}"/><button class="remove" onclick="removeGallery(${i})">×</button></div>`
+  ).join('');
+}
+
+function removeGallery(i){
+  data.gallery.images.splice(i,1);
+  renderGallery();
+}
+
+function addGalleryUrl(){
+  const input = document.getElementById('f-gallery-url');
+  if(input.value.trim()){
+    data.gallery.images.push(input.value.trim());
+    input.value = '';
+    renderGallery();
+  }
+}
+
+function handleGalleryUpload(input){
+  Array.from(input.files).forEach(file=>{
+    const fd = new FormData();
+    fd.append('image', file);
+    fetch('/upload-image', { method: 'POST', body: fd })
+      .then(r => { if (r.status === 401) { window.location.href = '/admin'; } return r.json(); })
+      .then(j => { if (j.url) { data.gallery.images.push(j.url); renderGallery(); } })
+      .catch(() => showToast('Upload failed.'));
+  });
+  input.value = '';
+}
+
+function handleImageUpload(input, targetId){
+  const file = input.files[0];
+  if(!file) return;
+  const fd = new FormData();
+  fd.append('image', file);
+  fetch('/upload-image', { method: 'POST', body: fd })
+    .then(r => { if (r.status === 401) { window.location.href = '/admin'; } return r.json(); })
+    .then(j => { if (j.url) document.getElementById(targetId).value = j.url; })
+    .catch(() => showToast('Upload failed.'));
+  input.value = '';
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg || 'Changes saved successfully!';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+function saveAll(){
+  collectForm();
+  fetch('/update-text', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data)
+  })
+    .then(r => { if (r.status === 401) { window.location.href = '/admin'; } return r.json(); })
+    .then(() => showToast())
+    .catch(() => showToast('Save failed. Is the server running?'));
+}
+
+function resetAll(){
+  if(confirm('Reset all data to defaults? This cannot be undone.')){
+    fetch('/update-text', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(DEFAULT_DATA)
+    })
+      .then(r => { if (r.status === 401) { window.location.href = '/admin'; } return r.json(); })
+      .then(() => {
+        data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+        populateForm();
+        showToast('Reset to defaults!');
+      })
+      .catch(() => showToast('Reset failed.'));
+  }
+}
+
+function logout(){
+  fetch('/admin-logout', { method: 'POST' }).finally(() => {
+    window.location.href = '/admin';
+  });
+}
+
+// Confirm session, then load current content from the backend.
+fetch('/admin-status')
+  .then(r => {
+    if (!r.ok) { window.location.href = '/admin'; return; }
+    return fetch('/get-content');
+  })
+  .then(r => r && r.json())
+  .then(c => { if (c) { data = c; populateForm(); } })
+  .catch(() => { populateForm(); });
+</script>
+</body>
+</html>
