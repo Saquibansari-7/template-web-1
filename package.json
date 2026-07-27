@@ -1,17 +1,23 @@
 {
-  "name": "wedding-cms",
+  "name": "wedding-site",
   "version": "1.0.0",
-  "description": "Lightweight Node.js + Express backend for a wedding website content management (images + text).",
-  "main": "server.js",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js"
-  },
-  "engines": {
-    "node": ">=18"
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "express": "^4.19.2",
-    "multer": "^2.0.0"
+    "@supabase/supabase-js": "^2.49.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "typescript": "~5.7.2",
+    "vite": "^6.0.0"
   }
 }
