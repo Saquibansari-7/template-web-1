@@ -4,43 +4,57 @@ export function syncContentToDOM(content: WebsiteContent, sections: SectionSetti
   const q = (sel: string) => document.querySelector(sel) as HTMLElement | null;
   const set = (sel: string, value: string) => {
     const el = q(sel);
-    if (el) el.textContent = value;
+    if (el) {
+      const changed = el.textContent !== value;
+      el.textContent = value;
+      if (changed) console.log('[sync] text', sel, '=>', value);
+    }
   };
   const setHtml = (sel: string, value: string) => {
     const el = q(sel);
-    if (el) el.innerHTML = value;
+    if (el) {
+      el.innerHTML = value;
+      console.log('[sync] html', sel, '=>', value.slice(0, 80));
+    }
   };
   const setSrc = (sel: string, value: string) => {
     const el = q(sel) as HTMLImageElement | null;
-    if (el) el.src = value;
+    if (!el) return;
+    const trimmed = (value || '').trim();
+    if (!trimmed || trimmed.startsWith('/uploads/')) {
+      console.warn('[sync] skip broken/local image src', sel, trimmed);
+      return;
+    }
+
+    const cacheBusted = trimmed.includes('?') ? `${trimmed}&_=${Date.now()}` : `${trimmed}?_=${Date.now()}`;
+    const changed = el.getAttribute('data-src') !== cacheBusted;
+    if (changed) {
+      el.setAttribute('data-src', cacheBusted);
+      console.log('[sync] src', sel, '=>', cacheBusted);
+      el.onerror = () => console.error('[sync] image failed to load', sel, cacheBusted);
+      el.onload = () => console.log('[sync] image loaded', sel, cacheBusted);
+      el.src = cacheBusted;
+    }
   };
 
-  // Couple names
   set('[data-bind="name1"]', content.couple.name1);
   set('[data-bind="name2"]', content.couple.name2);
-
-  // Hero
   set('[data-bind="hero-subtitle"]', content.hero.subtitle);
   set('[data-bind="hero-date-loc"]', content.hero.date + ' \u00A0·\u00A0 ' + content.hero.location);
   setSrc('[data-bind="hero-img"]', content.hero.image);
 
-  // Save the date
   set('[data-bind="std-heading"]', content.saveTheDate.heading);
   set('[data-bind="std-quote"]', content.saveTheDate.quote);
 
-  // Invitation Card
   setSrc('[data-bind="inv-img"]', content.invitationCard.image);
 
-  // Countdown
   set('[data-bind="cd-heading"]', content.countdown.heading);
 
-  // Story
   set('[data-bind="story-heading"]', content.story.heading);
   set('[data-bind="story-p1"]', content.story.paragraph1);
   set('[data-bind="story-p2"]', content.story.paragraph2);
   setSrc('[data-bind="story-img"]', content.story.image);
 
-  // Events
   setHtml('[data-bind="ev-cer"]',
     content.events.ceremony.time + '<br/>' + content.events.ceremony.venue + '<br/>' + content.events.ceremony.location);
   setHtml('[data-bind="ev-rec"]',
@@ -48,28 +62,24 @@ export function syncContentToDOM(content: WebsiteContent, sections: SectionSetti
   setHtml('[data-bind="ev-loc"]',
     content.events.mapLocation.address + '<br/>' + content.events.mapLocation.city + '<br/>' + content.events.mapLocation.region);
 
-  // Gallery
   const galleryContainer = q('[data-bind="gallery-grid"]');
   if (galleryContainer) {
-      galleryContainer.innerHTML = content.gallery.images.map((url: string, i: number) =>
-        `<img class="reveal w-full h-64 md:h-80 object-cover${i === 1 ? ' md:row-span-2 md:h-full' : ''}" src="${url}" alt="Gallery photo ${i + 1}">`
-      ).join('');
+    galleryContainer.innerHTML = content.gallery.images.map((url: string, i: number) =>
+      `<img class="reveal w-full h-64 md:h-80 object-cover${i === 1 ? ' md:row-span-2 md:h-full' : ''}" src="${url}" alt="Gallery photo ${i + 1}">`
+    ).join('');
+    console.log('[sync] gallery images set:', content.gallery.images.length);
   }
 
-  // Quote
   set('[data-bind="quote-text"]', content.quote.text);
   set('[data-bind="quote-author"]', content.quote.author);
 
-  // RSVP
   set('[data-bind="rsvp-heading"]', content.rsvp.heading);
   set('[data-bind="rsvp-deadline"]', content.rsvp.deadline);
 
-  // Footer
   setHtml('[data-bind="footer-names"]', content.couple.name1 + ' &amp; ' + content.couple.name2);
   set('[data-bind="footer-date"]', content.footer.date);
   set('[data-bind="footer-tagline"]', content.footer.tagline);
 
-  // Section visibility
   const sectionMap: Record<string, string> = {
     hero: '#home',
     saveTheDate: '#save-the-date',

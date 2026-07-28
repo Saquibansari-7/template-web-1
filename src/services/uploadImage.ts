@@ -36,7 +36,7 @@ export async function uploadImage(siteId: string, file: File): Promise<string | 
   console.log('[uploadImage] uploaded:', data?.path);
 
   const { data: publicData } = supabase.storage
-    .from('wedding')
+    .from('sites')
     .getPublicUrl(filePath);
 
   const publicUrl = publicData?.publicUrl || null;

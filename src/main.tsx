@@ -19,3 +19,15 @@ try {
 } catch (e) {
   console.error('[wedding] Failed to mount React:', e);
 }
+
+// Force fresh load on hard refresh by invalidating old cached image srcs
+if ('caches' in window) {
+  caches.keys().then((names) => {
+    names.forEach((name) => {
+      if (name.includes('wedding') || name.includes('static')) {
+        caches.delete(name);
+      }
+    });
+  });
+}
+

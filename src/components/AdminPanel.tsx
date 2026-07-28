@@ -16,9 +16,25 @@ function AdminPanel({ onClose }: { onClose: () => void }) {
     setTimeout(() => setToast(''), 2500);
   };
 
+  const resetBrokenImages = () => {
+    const fix = (url: string) => {
+      if (!url || url.startsWith('/uploads/')) return '';
+      if (url.includes('xbzxtkttrrtlsflceise.supabase.co')) return '';
+      return url;
+    };
+    setLocal((prev) => ({
+      ...prev,
+      hero: { ...prev.hero, image: fix(prev.hero.image) },
+      story: { ...prev.story, image: fix(prev.story.image) },
+      invitationCard: { ...prev.invitationCard, image: fix(prev.invitationCard.image) },
+      gallery: { ...prev.gallery, images: prev.gallery.images.map(fix).filter(Boolean) },
+    }));
+    showToast('Broken image URLs cleared');
+  };
+
   const handleSave = async () => {
     try {
-      await saveContent('default');
+      await saveContent('default', local, sections);
       showToast('Changes saved successfully!');
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Save failed.';
@@ -44,6 +60,22 @@ function AdminPanel({ onClose }: { onClose: () => void }) {
 
   return (
     <div>
+      <button
+        onClick={resetBrokenImages}
+        style={{
+          background: '#7f1d1d',
+          color: '#fff',
+          border: '1px solid #991b1b',
+          borderRadius: 8,
+          padding: '10px 16px',
+          fontSize: 12,
+          cursor: 'pointer',
+          marginBottom: 24,
+        }}
+      >
+        Reset Broken Images
+      </button>
+
       {/* COUPLE NAMES */}
       <div style={{ background: '#1a1a1a', border: '1px solid #333', borderRadius: 12, padding: 24, marginBottom: 16 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>

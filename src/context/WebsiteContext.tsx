@@ -11,7 +11,7 @@ export interface WebsiteContextType {
   updateContent: (section: keyof WebsiteContent, field: string, value: unknown) => void;
   updateNestedContent: (section: keyof WebsiteContent, path: string, value: unknown) => void;
   updateSection: (sectionName: string, visible: boolean) => void;
-  saveContent: (siteId: string) => Promise<void>;
+  saveContent: (siteId: string, content?: WebsiteContent, sections?: SectionSettings) => Promise<void>;
   uploadImage: (siteId: string, file: File) => Promise<string | null>;
 }
 
@@ -67,7 +67,7 @@ const defaultContent: WebsiteContent = {
     tagline: 'With love, forever & always',
   },
   invitationCard: {
-    image: '/uploads/1784113414259-7r1yf1.png',
+    image: '',
   },
   sections: {
     hero: true,
@@ -102,7 +102,7 @@ const isSupabaseConfigured = () => {
 
 const getStoredSiteId = (): string => {
   try {
-    const stored = localStorage.getItem('weddingSiteId');
+    const stored = localStorage.getItem('sitesSiteId');
     return stored || defaultSiteId;
   } catch {
     return defaultSiteId;
@@ -111,7 +111,7 @@ const getStoredSiteId = (): string => {
 
 const storeSiteId = (id: string) => {
   try {
-    localStorage.setItem('weddingSiteId', id);
+    localStorage.setItem('sitesSiteId', id);
   } catch {
     // localStorage not available
   }
@@ -200,8 +200,8 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
     }));
   };
 
-  const saveToSupabase = async (siteId: string) => {
-    const result = await saveContent(siteId, content, sections);
+  const saveToSupabase = async (siteId: string, overrideContent?: WebsiteContent, overrideSections?: SectionSettings) => {
+    const result = await saveContent(siteId, overrideContent || content, overrideSections || sections);
     if ((result as { error?: unknown } | undefined)?.error) {
       const errorMessage = (result as { error: { message?: string } }).error?.message || 'Unknown error';
       throw new Error(`Save failed: ${errorMessage}`);
