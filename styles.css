@@ -707,3 +707,67 @@ body {
     letter-spacing: 0.35em;
   }
 }
+
+@media (max-width: 480px) {
+  /* Safety belt for very small phones / narrow viewports */
+  #opening-overlay {
+    padding: 16px;
+  }
+
+  .seal-wrap {
+    width: 100%;
+    max-width: 320px;
+    padding: 0 12px;
+    box-sizing: border-box;
+  }
+
+  .seal-stage {
+    width: min(190px, 70vw);
+    height: min(190px, 70vw);
+    max-width: 100%;
+  }
+
+  .seal-halo {
+    width: min(260px, 80vw);
+    height: min(260px, 80vw);
+  }
+
+  .seal-ring {
+    inset: -16%;
+  }
+
+  .seal-ring.rev {
+    inset: -28%;
+  }
+
+  .tap-hint {
+    margin-top: 20px;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-align: center;
+    padding: 0 8px;
+    line-height: 1.4;
+  }
+
+  .shard {
+    width: 14px;
+    height: 14px;
+    margin: -7px 0 0 -7px;
+  }
+}
+
+/* Story paragraph alignment */
+#story .serif {
+  text-align: justify;
+  hyphens: auto;
+  line-height: 1.75;
+  letter-spacing: 0.01em;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+#story p {
+  max-width: 72ch;
+  margin-left: auto;
+  margin-right: auto;
+}

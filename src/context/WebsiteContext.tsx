@@ -40,7 +40,7 @@ const defaultContent: WebsiteContent = {
   events: {
     ceremony: { time: '4:00 PM', venue: 'Villa San Crispolto', location: 'Tuscany, Italy' },
     reception: { time: '6:30 PM', venue: 'The Garden Terrace', location: 'Villa San Crispolto' },
-    mapLocation: { address: 'Via del Colle 12', city: 'Chianti, 53017', region: 'Tuscany, Italy' },
+    mapLocation: { address: 'Via del Colle 12', city: 'Chianti, 53017', region: 'Tuscany, Italy', mapUrl: '' },
   },
   gallery: {
     enabled: true,
@@ -65,6 +65,11 @@ const defaultContent: WebsiteContent = {
   footer: {
     date: '14 . 09 . 2026',
     tagline: 'With love, forever & always',
+    socials: {
+      instagram: '',
+      x: '',
+      facebook: '',
+    },
   },
   invitationCard: {
     image: '',

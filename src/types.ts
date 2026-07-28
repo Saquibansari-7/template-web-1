@@ -40,6 +40,7 @@ export interface Events {
     address: string;
     city: string;
     region: string;
+    mapUrl?: string;
   };
 }
 
@@ -62,6 +63,11 @@ export interface Rsvp {
 export interface Footer {
   date: string;
   tagline: string;
+  socials?: {
+    instagram?: string;
+    x?: string;
+    facebook?: string;
+  };
 }
 
 export interface InvitationCard {

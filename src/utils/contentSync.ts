@@ -80,6 +80,32 @@ export function syncContentToDOM(content: WebsiteContent, sections: SectionSetti
   set('[data-bind="footer-date"]', content.footer.date);
   set('[data-bind="footer-tagline"]', content.footer.tagline);
 
+  if (content.footer.socials) {
+    const instagram = document.querySelector('[data-bind="footer-instagram"]') as HTMLAnchorElement | null;
+    const x = document.querySelector('[data-bind="footer-x"]') as HTMLAnchorElement | null;
+    const facebook = document.querySelector('[data-bind="footer-facebook"]') as HTMLAnchorElement | null;
+
+    if (instagram) {
+      instagram.href = content.footer.socials.instagram || '#';
+      instagram.style.display = content.footer.socials.instagram ? '' : 'none';
+    }
+    if (x) {
+      x.href = content.footer.socials.x || '#';
+      x.style.display = content.footer.socials.x ? '' : 'none';
+    }
+    if (facebook) {
+      facebook.href = content.footer.socials.facebook || '#';
+      facebook.style.display = content.footer.socials.facebook ? '' : 'none';
+    }
+  }
+
+  const viewLocationBtn = document.querySelector('[data-bind="view-location"]') as HTMLAnchorElement | null;
+  if (viewLocationBtn && content.events.mapLocation.mapUrl) {
+    viewLocationBtn.href = content.events.mapLocation.mapUrl;
+    viewLocationBtn.target = '_blank';
+    viewLocationBtn.rel = 'noopener noreferrer';
+  }
+
   const sectionMap: Record<string, string> = {
     hero: '#home',
     saveTheDate: '#save-the-date',

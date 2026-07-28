@@ -553,6 +553,15 @@ function AdminPanel({ onClose }: { onClose: () => void }) {
                 style={{ width: '100%', background: '#222', border: '1px solid #444', borderRadius: 8, padding: '10px 12px', color: '#fff', fontSize: 14, outline: 'none' }}
               />
             </div>
+            <div style={{ marginTop: 12 }}>
+              <label style={{ display: 'block', fontSize: 12, color: '#888', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 6 }}>Map URL (Google Maps link)</label>
+              <input
+                value={local.events.mapLocation.mapUrl}
+                onChange={(e) => setLocal({ ...local, events: { ...local.events, mapLocation: { ...local.events.mapLocation, mapUrl: e.target.value } } })}
+                placeholder="https://maps.google.com/..."
+                style={{ width: '100%', background: '#222', border: '1px solid #444', borderRadius: 8, padding: '10px 12px', color: '#fff', fontSize: 14, outline: 'none' }}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -779,6 +788,30 @@ function AdminPanel({ onClose }: { onClose: () => void }) {
             <input
               value={local.footer.tagline}
               onChange={(e) => setLocal({ ...local, footer: { ...local.footer, tagline: e.target.value } })}
+              style={{ width: '100%', background: '#222', border: '1px solid #444', borderRadius: 8, padding: '10px 12px', color: '#fff', fontSize: 14, outline: 'none' }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, color: '#888', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 6 }}>Instagram URL</label>
+            <input
+              value={local.footer.socials?.instagram}
+              onChange={(e) => setLocal({ ...local, footer: { ...local.footer, socials: { ...local.footer.socials, instagram: e.target.value } } })}
+              style={{ width: '100%', background: '#222', border: '1px solid #444', borderRadius: 8, padding: '10px 12px', color: '#fff', fontSize: 14, outline: 'none' }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, color: '#888', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 6 }}>X / Twitter URL</label>
+            <input
+              value={local.footer.socials?.x}
+              onChange={(e) => setLocal({ ...local, footer: { ...local.footer, socials: { ...local.footer.socials, x: e.target.value } } })}
+              style={{ width: '100%', background: '#222', border: '1px solid #444', borderRadius: 8, padding: '10px 12px', color: '#fff', fontSize: 14, outline: 'none' }}
+            />
+          </div>
+          <div>
+            <label style={{ display: 'block', fontSize: 12, color: '#888', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 6 }}>Facebook URL</label>
+            <input
+              value={local.footer.socials?.facebook}
+              onChange={(e) => setLocal({ ...local, footer: { ...local.footer, socials: { ...local.footer.socials, facebook: e.target.value } } })}
               style={{ width: '100%', background: '#222', border: '1px solid #444', borderRadius: 8, padding: '10px 12px', color: '#fff', fontSize: 14, outline: 'none' }}
             />
           </div>
