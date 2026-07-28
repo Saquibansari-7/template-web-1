@@ -28,11 +28,18 @@ function AdminPanel({ onClose }: { onClose: () => void }) {
   };
 
   const handleFileUpload = async (siteId: string, file: File) => {
-    const url = await uploadImage(siteId, file);
-    if (url) {
-      showToast('Image uploaded');
+    try {
+      const url = await uploadImage(siteId, file);
+      if (url) {
+        showToast('Image uploaded');
+      }
+      return url;
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Image upload failed.';
+      showToast(msg);
+      console.error('[admin] upload failed', e);
+      return null;
     }
-    return url;
   };
 
   return (
@@ -126,6 +133,14 @@ function AdminPanel({ onClose }: { onClose: () => void }) {
             onChange={(e) => setLocal({ ...local, hero: { ...local.hero, image: e.target.value } })}
             style={{ width: '100%', background: '#222', border: '1px solid #444', borderRadius: 8, padding: '10px 12px', color: '#fff', fontSize: 14, outline: 'none' }}
           />
+          {local.hero.image && (
+            <img
+              src={local.hero.image}
+              alt="Hero preview"
+              style={{ width: '100%', maxHeight: 160, objectFit: 'cover', borderRadius: 8, marginTop: 8, border: '1px solid #333' }}
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+          )}
         </div>
         <div>
           <label style={{ display: 'block', fontSize: 12, color: '#888', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 6 }}>Or Upload Image</label>
@@ -181,6 +196,27 @@ function AdminPanel({ onClose }: { onClose: () => void }) {
             value={local.invitationCard.image}
             onChange={(e) => setLocal({ ...local, invitationCard: { ...local.invitationCard, image: e.target.value } })}
             style={{ width: '100%', background: '#222', border: '1px solid #444', borderRadius: 8, padding: '10px 12px', color: '#fff', fontSize: 14, outline: 'none', marginBottom: 8 }}
+          />
+          {local.invitationCard.image && (
+            <img
+              src={local.invitationCard.image}
+              alt="Invitation preview"
+              style={{ width: '100%', maxHeight: 200, objectFit: 'cover', borderRadius: 8, marginBottom: 8, border: '1px solid #333' }}
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+          )}
+          <label style={{ display: 'block', fontSize: 12, color: '#888', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 6 }}>Or Upload Image</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                const url = await handleFileUpload('default', file);
+                if (url) setLocal({ ...local, invitationCard: { ...local.invitationCard, image: url } });
+              }
+            }}
+            style={{ color: '#ccc', fontSize: 14 }}
           />
         </div>
       </div>
@@ -346,6 +382,14 @@ function AdminPanel({ onClose }: { onClose: () => void }) {
             onChange={(e) => setLocal({ ...local, story: { ...local.story, image: e.target.value } })}
             style={{ width: '100%', background: '#222', border: '1px solid #444', borderRadius: 8, padding: '10px 12px', color: '#fff', fontSize: 14, outline: 'none' }}
           />
+          {local.story.image && (
+            <img
+              src={local.story.image}
+              alt="Story preview"
+              style={{ width: '100%', maxHeight: 160, objectFit: 'cover', borderRadius: 8, marginTop: 8, border: '1px solid #333' }}
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+          )}
         </div>
         <div>
           <label style={{ display: 'block', fontSize: 12, color: '#888', textTransform: 'uppercase', letterSpacing: '.08em', marginBottom: 6 }}>Or Upload Image</label>
