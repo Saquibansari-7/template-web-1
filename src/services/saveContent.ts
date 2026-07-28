@@ -1,31 +1,26 @@
 import { supabase } from '../lib/supabase';
 import { WebsiteContent, SectionSettings } from '../types';
 
-const DEFAULT_SITE_ID = 'default';
+export async function saveContent(siteId: string, content: WebsiteContent, sections: SectionSettings) {
+  console.log('saveContent - siteId:', siteId);
 
-export async function saveContent(
-  siteId: string,
-  content: WebsiteContent,
-  sections: SectionSettings
-): Promise<void> {
   if (!supabase || typeof supabase.from !== 'function') {
-    return;
+    const err = new Error('Supabase not configured - check your .env file');
+    console.error('saveContent - error:', err);
+    throw err;
   }
 
-  const dataToSave = {
-    ...content,
-    sections,
-  };
-
-  const { error } = await supabase
+  const result = await supabase
     .from('site_content')
     .upsert({
       site_id: siteId,
-      data: dataToSave,
+      data: {
+        ...content,
+        sections,
+      },
       updated_at: new Date().toISOString(),
     });
 
-  if (error) {
-    console.error('Failed to save content:', error);
-  }
+  console.log('saveContent - result:', result);
+  return result;
 }

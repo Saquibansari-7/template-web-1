@@ -12,11 +12,7 @@ export interface WebsiteContextType {
   updateNestedContent: (section: keyof WebsiteContent, path: string, value: unknown) => void;
   updateSection: (sectionName: string, visible: boolean) => void;
   saveContent: (siteId: string) => Promise<void>;
-  uploadImage: (file: File) => Promise<string | null>;
-  isAdminAuthed: boolean;
-  login: (user: string, pass: string) => Promise<boolean>;
-  logout: () => Promise<void>;
-  checkAuth: () => Promise<boolean>;
+  uploadImage: (siteId: string, file: File) => Promise<string | null>;
 }
 
 const defaultContent: WebsiteContent = {
@@ -205,46 +201,11 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
   };
 
   const saveToSupabase = async (siteId: string) => {
-    await saveContent(siteId, content, sections);
-  };
-
-  const login = async (user: string, pass: string): Promise<boolean> => {
-    if (!supabase || typeof supabase.from !== 'function') {
-      return false;
+    const result = await saveContent(siteId, content, sections);
+    if ((result as { error?: unknown } | undefined)?.error) {
+      const errorMessage = (result as { error: { message?: string } }).error?.message || 'Unknown error';
+      throw new Error(`Save failed: ${errorMessage}`);
     }
-
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email: user,
-      password: pass,
-    });
-
-    if (error || !data.session) {
-      console.error('Login failed:', error);
-      return false;
-    }
-
-    setIsAdminAuthed(true);
-    return true;
-  };
-
-  const logout = async () => {
-    if (!supabase || typeof supabase.from !== 'function') {
-      return;
-    }
-
-    await supabase.auth.signOut();
-    setIsAdminAuthed(false);
-  };
-
-  const checkAuth = async (): Promise<boolean> => {
-    if (!supabase || typeof supabase.from !== 'function') {
-      return false;
-    }
-
-    const { data } = await supabase.auth.getSession();
-    const authed = !!data.session;
-    setIsAdminAuthed(authed);
-    return authed;
   };
 
   return (
@@ -256,11 +217,7 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
         updateNestedContent,
         updateSection,
         saveContent: saveToSupabase,
-        uploadImage: uploadImage as (file: File) => Promise<string | null>,
-        isAdminAuthed,
-        login,
-        logout,
-        checkAuth,
+        uploadImage: uploadImage as WebsiteContextType['uploadImage'],
       }}
     >
       {children}

@@ -1,29 +1,26 @@
 import { supabase } from '../lib/supabase';
 
-export async function uploadImage(file: File): Promise<string | null> {
-  if (!supabase || typeof supabase.from !== 'function') {
-    return null;
+export async function uploadImage(siteId: string, file: File) {
+  if (!supabase || typeof supabase.storage !== 'object') {
+    const err = new Error('Supabase not configured - check your .env file');
+    console.error('[uploadImage]', err.message);
+    throw err;
   }
 
-  const fileExt = file.name.split('.').pop()?.toLowerCase() || 'bin';
-  const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${fileExt}`;
-  const filePath = `wedding/${fileName}`;
+  const path = `${siteId}/${Date.now()}-${file.name}`;
 
   const { error } = await supabase.storage
     .from('wedding')
-    .upload(filePath, file, {
-      cacheControl: '3600',
-      upsert: false,
-    });
+    .upload(path, file);
 
   if (error) {
-    console.error('Upload failed:', error);
-    return null;
+    console.error('[uploadImage] upload failed:', error);
+    throw error;
   }
 
   const { data: publicData } = supabase.storage
     .from('wedding')
-    .getPublicUrl(filePath);
+    .getPublicUrl(path);
 
-  return publicData?.publicUrl || null;
+  return publicData.publicUrl;
 }

@@ -1,22 +1,24 @@
 import { supabase } from '../lib/supabase';
 import { WebsiteContent } from '../types';
 
-const DEFAULT_SITE_ID = 'default';
-
-export async function loadContent(siteId: string): Promise<WebsiteContent | null> {
+export async function loadContent(siteId: string) {
   if (!supabase || typeof supabase.from !== 'function') {
-    return null;
+    const err = new Error('Supabase not configured - check your .env file');
+    console.error('[loadContent]', err.message);
+    throw err;
   }
 
   const { data, error } = await supabase
     .from('site_content')
     .select('data')
     .eq('site_id', siteId)
-    .maybeSingle();
+    .single();
 
-  if (error || !data?.data) {
-    return null;
+  if (error) {
+    console.error('[loadContent] Supabase error:', error);
+    throw error;
   }
 
-  return data.data as WebsiteContent;
+  console.log('[loadContent] loaded for siteId:', siteId, 'hasData:', !!data?.data);
+  return data?.data;
 }

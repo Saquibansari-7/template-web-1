@@ -1,16 +1,29 @@
-/// <reference types="vite/client" />
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-import { createClient } from "@supabase/supabase-js";
+const supabaseUrl = import.meta.env.VITE_PUBLIC_SUPABASE_URL;
+const supabasePublishableKey = import.meta.env.VITE_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
-const supabaseUrl = import.meta.env.VITE_PUBLIC_SUPABASE_URL as string;
-const supabasePublishableKey = import.meta.env.VITE_PUBLIC_SUPABASE_PUBLISHABLE_KEY as string;
+function createClientIfConfigured(): SupabaseClient | null {
+  let url = typeof supabaseUrl === 'string' ? supabaseUrl.trim() : '';
+  const key = typeof supabasePublishableKey === 'string' ? supabasePublishableKey.trim() : '';
 
-const isValid =
-  supabaseUrl &&
-  supabasePublishableKey &&
-  supabaseUrl.startsWith("https://") &&
-  supabasePublishableKey.startsWith("sb_publishable_");
+  if (!url || !key) {
+    console.error('[supabase] Missing env vars: VITE_PUBLIC_SUPABASE_URL / VITE_PUBLIC_SUPABASE_PUBLISHABLE_KEY');
+    return null;
+  }
 
-export const supabase = isValid
-  ? createClient(supabaseUrl, supabasePublishableKey)
-  : ({} as ReturnType<typeof createClient>);
+  if (!url.startsWith('http://') && !url.startsWith('https://')) {
+    url = 'https://' + url;
+  }
+
+  console.log('[supabase] Using URL:', url);
+
+  return createClient(url, key, {
+    auth: {
+      persistSession: false,
+      detectSessionInUrl: false,
+    },
+  });
+}
+
+export const supabase = createClientIfConfigured();

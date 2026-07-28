@@ -20,13 +20,15 @@ function AdminPanel({ onClose }: { onClose: () => void }) {
     try {
       await saveContent('default');
       showToast('Changes saved successfully!');
-    } catch {
-      showToast('Save failed.');
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Save failed.';
+      showToast(msg);
+      console.error('[admin] save failed', e);
     }
   };
 
-  const handleFileUpload = async (file: File) => {
-    const url = await uploadImage(file);
+  const handleFileUpload = async (siteId: string, file: File) => {
+    const url = await uploadImage(siteId, file);
     if (url) {
       showToast('Image uploaded');
     }
@@ -133,7 +135,7 @@ function AdminPanel({ onClose }: { onClose: () => void }) {
             onChange={async (e) => {
               const file = e.target.files?.[0];
               if (file) {
-                const url = await handleFileUpload(file);
+                const url = await handleFileUpload('default', file);
                 if (url) setLocal({ ...local, hero: { ...local.hero, image: url } });
               }
             }}
@@ -353,7 +355,7 @@ function AdminPanel({ onClose }: { onClose: () => void }) {
             onChange={async (e) => {
               const file = e.target.files?.[0];
               if (file) {
-                const url = await handleFileUpload(file);
+                const url = await handleFileUpload('default', file);
                 if (url) setLocal({ ...local, story: { ...local.story, image: url } });
               }
             }}
@@ -567,7 +569,7 @@ function AdminPanel({ onClose }: { onClose: () => void }) {
             onChange={async (e) => {
               const files = Array.from(e.target.files || []);
               for (const file of files) {
-                const url = await handleFileUpload(file);
+                const url = await handleFileUpload('default', file);
                 if (url) setLocal({ ...local, gallery: { ...local.gallery, images: [...local.gallery.images, url] } });
               }
             }}

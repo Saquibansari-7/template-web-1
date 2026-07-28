@@ -36,7 +36,9 @@ function App() {
   }, []);
 
   useEffect(() => {
-    if (window.location.pathname === '/admin') {
+    const path = window.location.pathname || '';
+    if (path.startsWith('/admin')) {
+      console.log('[wedding] /admin detected, opening admin panel');
       setAdminOpen(true);
     }
   }, []);

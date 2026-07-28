@@ -3,10 +3,19 @@ import ReactDOM from 'react-dom/client';
 import { WebsiteProvider } from './context/WebsiteContext';
 import App from './App';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <WebsiteProvider>
-      <App />
-    </WebsiteProvider>
-  </React.StrictMode>
-);
+if (location.protocol === 'file:') {
+  console.warn('[wedding] Running from file:// — ES modules may be blocked by the browser. Use `npm run dev` or `npm run preview` instead.');
+}
+
+try {
+  ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+      <WebsiteProvider>
+        <App />
+      </WebsiteProvider>
+    </React.StrictMode>
+  );
+  console.log('[wedding] React mounted, path:', location.pathname);
+} catch (e) {
+  console.error('[wedding] Failed to mount React:', e);
+}
