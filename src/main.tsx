@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { WebsiteProvider } from './context/WebsiteContext';
 import App from './App';
 
-if (location.protocol === 'file:') {
+if (import.meta.env.DEV && location.protocol === 'file:') {
   console.warn('[wedding] Running from file:// — ES modules may be blocked by the browser. Use `npm run dev` or `npm run preview` instead.');
 }
 
@@ -15,7 +15,7 @@ try {
       </WebsiteProvider>
     </React.StrictMode>
   );
-  console.log('[wedding] React mounted, path:', location.pathname);
+  if (import.meta.env.DEV) console.log('[wedding] React mounted, path:', location.pathname);
 } catch (e) {
   console.error('[wedding] Failed to mount React:', e);
 }
@@ -30,4 +30,3 @@ if ('caches' in window) {
     });
   });
 }
-

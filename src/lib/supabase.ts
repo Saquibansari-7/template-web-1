@@ -8,7 +8,7 @@ function createClientIfConfigured(): SupabaseClient | null {
   const key = typeof supabasePublishableKey === 'string' ? supabasePublishableKey.trim() : '';
 
   if (!url || !key) {
-    console.error('[supabase] Missing env vars: VITE_PUBLIC_SUPABASE_URL / VITE_PUBLIC_SUPABASE_PUBLISHABLE_KEY');
+    if (import.meta.env.DEV) console.error('[supabase] Missing env vars: VITE_PUBLIC_SUPABASE_URL / VITE_PUBLIC_SUPABASE_PUBLISHABLE_KEY');
     return null;
   }
 
@@ -16,12 +16,12 @@ function createClientIfConfigured(): SupabaseClient | null {
     url = 'https://' + url;
   }
 
-  console.log('[supabase] Using URL:', url);
+  if (import.meta.env.DEV) console.log('[supabase] Using URL:', url);
 
   return createClient(url, key, {
     auth: {
-      persistSession: false,
-      detectSessionInUrl: false,
+      persistSession: true,
+      detectSessionInUrl: true,
     },
   });
 }

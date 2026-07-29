@@ -1,15 +1,33 @@
 import { useState, useEffect } from 'react';
 import { useWebsiteContext } from '../context/WebsiteContext';
 import { syncContentToDOM, updateCountdown } from '../utils/contentSync';
+import { supabase } from '../lib/supabase';
 
 function AdminPanel({ onClose }: { onClose: () => void }) {
   const { content, sections, updateContent, updateNestedContent, updateSection, saveContent, uploadImage } = useWebsiteContext();
   const [toast, setToast] = useState('');
   const [local, setLocal] = useState({ ...content });
+  const [hasSupabaseSession, setHasSupabaseSession] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
 
   useEffect(() => {
     setLocal({ ...content });
   }, [content]);
+
+  useEffect(() => {
+    const check = async () => {
+      try {
+        if (supabase) {
+          const { data } = await supabase.auth.getSession();
+          setHasSupabaseSession(!!data.session);
+        }
+      } catch {
+        setHasSupabaseSession(false);
+      }
+      setCheckingSession(false);
+    };
+    check();
+  }, []);
 
   const showToast = (msg: string) => {
     setToast(msg);
@@ -33,17 +51,23 @@ function AdminPanel({ onClose }: { onClose: () => void }) {
   };
 
   const handleSave = async () => {
+    if (!hasSupabaseSession) {
+      showToast('Warning: No Supabase auth session. Changes are saved but not protected by RLS.');
+    }
     try {
       await saveContent('default', local, sections);
       showToast('Changes saved successfully!');
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Save failed.';
       showToast(msg);
-      console.error('[admin] save failed', e);
+      if (import.meta.env.DEV) console.error('[admin] save failed', e);
     }
   };
 
   const handleFileUpload = async (siteId: string, file: File) => {
+    if (!hasSupabaseSession) {
+      showToast('Warning: No Supabase auth session. Upload may fail due to RLS.');
+    }
     try {
       const url = await uploadImage(siteId, file);
       if (url) {
@@ -53,7 +77,7 @@ function AdminPanel({ onClose }: { onClose: () => void }) {
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Image upload failed.';
       showToast(msg);
-      console.error('[admin] upload failed', e);
+      if (import.meta.env.DEV) console.error('[admin] upload failed', e);
       return null;
     }
   };
@@ -75,6 +99,11 @@ function AdminPanel({ onClose }: { onClose: () => void }) {
       >
         Reset Broken Images
       </button>
+      {!checkingSession && !hasSupabaseSession && (
+        <div style={{ background: '#7c2d12', color: '#fff', border: '1px solid #9a3412', borderRadius: 8, padding: '10px 16px', marginBottom: 24, fontSize: 12 }}>
+          No Supabase auth session detected. Enable Supabase Auth (Email/Magic Link) and sign in to protect admin writes with RLS. Saves will still work but are not authenticated.
+        </div>
+      )}
 
       {/* COUPLE NAMES */}
       <div style={{ background: '#1a1a1a', border: '1px solid #333', borderRadius: 12, padding: 24, marginBottom: 16 }}>

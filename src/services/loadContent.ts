@@ -13,7 +13,7 @@ const EXPECTED_SUPABASE_HOST = (() => {
 })();
 
 function normalizeImage(value: string): string {
-  if (!value || value.startsWith('/uploads/')) return '';
+  if (!value || value.startsWith('/uploads/')) return value;
   const normalized = value.replace(/https?:\/\/[^/]+\.supabase\.co\//, (match) => {
     if (!EXPECTED_SUPABASE_HOST) return match;
     if (match.includes(EXPECTED_SUPABASE_HOST)) return match;
@@ -35,7 +35,7 @@ function sanitize(content: WebsiteContent): WebsiteContent {
 export async function loadContent(siteId: string) {
   if (!supabase || typeof supabase.from !== 'function') {
     const err = new Error('Supabase not configured - check your .env file');
-    console.error('[loadContent]', err.message);
+    if (import.meta.env.DEV) console.error('[loadContent]', err.message);
     throw err;
   }
 
@@ -46,7 +46,7 @@ export async function loadContent(siteId: string) {
     .single();
 
   if (error) {
-    console.error('[loadContent] Supabase error:', error);
+    if (import.meta.env.DEV) console.error('[loadContent] Supabase error:', error);
     throw error;
   }
 
@@ -54,8 +54,10 @@ export async function loadContent(siteId: string) {
   if (!raw) return null;
 
   const sanitized = sanitize(raw as WebsiteContent);
-  console.log('[loadContent] FINAL heroImage:', sanitized.hero.image);
-  console.log('[loadContent] FINAL storyImage:', sanitized.story.image);
-  console.log('[loadContent] FINAL invitationImage:', sanitized.invitationCard.image);
+  if (import.meta.env.DEV) {
+    console.log('[loadContent] FINAL heroImage:', sanitized.hero.image);
+    console.log('[loadContent] FINAL storyImage:', sanitized.story.image);
+    console.log('[loadContent] FINAL invitationImage:', sanitized.invitationCard.image);
+  }
   return sanitized;
 }

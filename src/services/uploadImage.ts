@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 export async function uploadImage(siteId: string, file: File): Promise<string | null> {
   if (!supabase || typeof supabase.from !== 'function' || !supabase.storage) {
     const err = new Error('Supabase is not configured. Check VITE_PUBLIC_SUPABASE_URL / VITE_PUBLIC_SUPABASE_PUBLISHABLE_KEY.');
-    console.error('[uploadImage]', err.message);
+    if (import.meta.env.DEV) console.error('[uploadImage]', err.message);
     throw err;
   }
 
@@ -11,7 +11,7 @@ export async function uploadImage(siteId: string, file: File): Promise<string | 
   const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${fileExt}`;
   const filePath = `${siteId}/${fileName}`;
 
-  console.log('[uploadImage] uploading to bucket=sites path=', filePath, 'size=', file.size, 'type=', file.type);
+  if (import.meta.env.DEV) console.log('[uploadImage] uploading to bucket=sites path=', filePath, 'size=', file.size, 'type=', file.type);
 
   const { data, error } = await supabase.storage
     .from('sites')
@@ -22,7 +22,7 @@ export async function uploadImage(siteId: string, file: File): Promise<string | 
 
   if (error) {
     const msg = error.message || String(error);
-    console.error('[uploadImage] upload failed:', error, 'message=', msg);
+    if (import.meta.env.DEV) console.error('[uploadImage] upload failed:', error, 'message=', msg);
 
     if (msg.includes('Bucket not found') || msg.toLowerCase().includes('bucket')) {
       throw new Error('Storage bucket "sites" not found. Create it in Supabase Storage.');
@@ -33,13 +33,13 @@ export async function uploadImage(siteId: string, file: File): Promise<string | 
     throw new Error(`Image upload failed: ${msg}`);
   }
 
-  console.log('[uploadImage] uploaded:', data?.path);
+  if (import.meta.env.DEV) console.log('[uploadImage] uploaded:', data?.path);
 
   const { data: publicData } = supabase.storage
     .from('sites')
     .getPublicUrl(filePath);
 
   const publicUrl = publicData?.publicUrl || null;
-  console.log('[uploadImage] publicUrl:', publicUrl);
+  if (import.meta.env.DEV) console.log('[uploadImage] publicUrl:', publicUrl);
   return publicUrl;
 }

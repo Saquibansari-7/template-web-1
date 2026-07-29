@@ -8,6 +8,14 @@ interface AdminLoginProps {
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MS = 30_000;
 
+const ADMIN_PASSWORD = (() => {
+  try {
+    return (import.meta.env.VITE_ADMIN_PASSWORD as string | undefined) || '';
+  } catch {
+    return '';
+  }
+})();
+
 function AdminLogin({ onLogin }: AdminLoginProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -56,32 +64,39 @@ function AdminLogin({ onLogin }: AdminLoginProps) {
       setError(`Too many attempts. Try again in ${Math.ceil((lockedUntil - Date.now()) / 1000)}s.`);
       return;
     }
-    if (password === 'demo@222') {
+
+    const expectedPassword = ADMIN_PASSWORD || 'demo@222';
+    if (!ADMIN_PASSWORD || ADMIN_PASSWORD === 'demo@222') {
+      console.warn('[admin] Using default password. Set VITE_ADMIN_PASSWORD in .env.');
+    }
+
+    if (password === expectedPassword) {
       localStorage.removeItem('adminLoginAttempts');
       localStorage.setItem('adminAuthenticated', 'true');
       onLogin();
-    } else {
-      const newAttempts = (() => {
-        try {
-          const stored = localStorage.getItem('adminLoginAttempts');
-          if (stored) return JSON.parse(stored).count + 1;
-        } catch {
-          // ignore
-        }
-        return 1;
-      })();
-
-      if (newAttempts >= MAX_ATTEMPTS) {
-        const until = Date.now() + LOCKOUT_MS;
-        setLockedUntil(until);
-        setIsLocked(true);
-        localStorage.setItem('adminLoginAttempts', JSON.stringify({ count: newAttempts, until }));
-        setError(`Too many attempts. Try again in ${LOCKOUT_MS / 1000}s.`);
-      } else {
-        setError(`Incorrect password (${newAttempts}/${MAX_ATTEMPTS})`);
-      }
-      setPassword('');
+      return;
     }
+
+    const newAttempts = (() => {
+      try {
+        const stored = localStorage.getItem('adminLoginAttempts');
+        if (stored) return JSON.parse(stored).count + 1;
+      } catch {
+        // ignore
+      }
+      return 1;
+    })();
+
+    if (newAttempts >= MAX_ATTEMPTS) {
+      const until = Date.now() + LOCKOUT_MS;
+      setLockedUntil(until);
+      setIsLocked(true);
+      localStorage.setItem('adminLoginAttempts', JSON.stringify({ count: newAttempts, until }));
+      setError(`Too many attempts. Try again in ${LOCKOUT_MS / 1000}s.`);
+    } else {
+      setError(`Incorrect password (${newAttempts}/${MAX_ATTEMPTS})`);
+    }
+    setPassword('');
   };
 
   return (

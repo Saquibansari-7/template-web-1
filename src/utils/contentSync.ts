@@ -2,19 +2,26 @@ import type { WebsiteContent, SectionSettings } from '../types';
 
 export function syncContentToDOM(content: WebsiteContent, sections: SectionSettings) {
   const q = (sel: string) => document.querySelector(sel) as HTMLElement | null;
+  const escapeHtml = (value: string) =>
+    value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   const set = (sel: string, value: string) => {
     const el = q(sel);
     if (el) {
       const changed = el.textContent !== value;
       el.textContent = value;
-      if (changed) console.log('[sync] text', sel, '=>', value);
+      if (changed && import.meta.env.DEV) console.log('[sync] text', sel, '=>', value);
     }
   };
   const setHtml = (sel: string, value: string) => {
     const el = q(sel);
     if (el) {
       el.innerHTML = value;
-      console.log('[sync] html', sel, '=>', value.slice(0, 80));
+      if (import.meta.env.DEV) console.log('[sync] html', sel, '=>', value.slice(0, 80));
     }
   };
   const setSrc = (sel: string, value: string) => {
@@ -22,7 +29,7 @@ export function syncContentToDOM(content: WebsiteContent, sections: SectionSetti
     if (!el) return;
     const trimmed = (value || '').trim();
     if (!trimmed || trimmed.startsWith('/uploads/')) {
-      console.warn('[sync] skip broken/local image src', sel, trimmed);
+      if (import.meta.env.DEV) console.warn('[sync] skip broken/local image src', sel, trimmed);
       return;
     }
 
@@ -30,9 +37,9 @@ export function syncContentToDOM(content: WebsiteContent, sections: SectionSetti
     const changed = el.getAttribute('data-src') !== cacheBusted;
     if (changed) {
       el.setAttribute('data-src', cacheBusted);
-      console.log('[sync] src', sel, '=>', cacheBusted);
-      el.onerror = () => console.error('[sync] image failed to load', sel, cacheBusted);
-      el.onload = () => console.log('[sync] image loaded', sel, cacheBusted);
+      if (import.meta.env.DEV) console.log('[sync] src', sel, '=>', cacheBusted);
+      el.onerror = () => { if (import.meta.env.DEV) console.error('[sync] image failed to load', sel, cacheBusted); };
+      el.onload = () => { if (import.meta.env.DEV) console.log('[sync] image loaded', sel, cacheBusted); };
       el.src = cacheBusted;
     }
   };
@@ -55,19 +62,26 @@ export function syncContentToDOM(content: WebsiteContent, sections: SectionSetti
   set('[data-bind="story-p2"]', content.story.paragraph2);
   setSrc('[data-bind="story-img"]', content.story.image);
 
-  setHtml('[data-bind="ev-cer"]',
-    content.events.ceremony.time + '<br/>' + content.events.ceremony.venue + '<br/>' + content.events.ceremony.location);
-  setHtml('[data-bind="ev-rec"]',
-    content.events.reception.time + '<br/>' + content.events.reception.venue + '<br/>' + content.events.reception.location);
-  setHtml('[data-bind="ev-loc"]',
-    content.events.mapLocation.address + '<br/>' + content.events.mapLocation.city + '<br/>' + content.events.mapLocation.region);
+  setHtml(
+    '[data-bind="ev-cer"]',
+    escapeHtml(content.events.ceremony.time) + '<br/>' + escapeHtml(content.events.ceremony.venue) + '<br/>' + escapeHtml(content.events.ceremony.location)
+  );
+  setHtml(
+    '[data-bind="ev-rec"]',
+    escapeHtml(content.events.reception.time) + '<br/>' + escapeHtml(content.events.reception.venue) + '<br/>' + escapeHtml(content.events.reception.location)
+  );
+  setHtml(
+    '[data-bind="ev-loc"]',
+    escapeHtml(content.events.mapLocation.address) + '<br/>' + escapeHtml(content.events.mapLocation.city) + '<br/>' + escapeHtml(content.events.mapLocation.region)
+  );
 
   const galleryContainer = q('[data-bind="gallery-grid"]');
   if (galleryContainer) {
-    galleryContainer.innerHTML = content.gallery.images.map((url: string, i: number) =>
-      `<img class="reveal w-full h-64 md:h-80 object-cover${i === 1 ? ' md:row-span-2 md:h-full' : ''}" src="${url}" alt="Gallery photo ${i + 1}">`
-    ).join('');
-    console.log('[sync] gallery images set:', content.gallery.images.length);
+    galleryContainer.innerHTML = content.gallery.images.map((url: string, i: number) => {
+      const safeUrl = escapeHtml(url);
+      return `<img class="reveal w-full h-64 md:h-80 object-cover${i === 1 ? ' md:row-span-2 md:h-full' : ''}" src="${safeUrl}" alt="Gallery photo ${i + 1}">`;
+    }).join('');
+    if (import.meta.env.DEV) console.log('[sync] gallery images set:', content.gallery.images.length);
   }
 
   set('[data-bind="quote-text"]', content.quote.text);
@@ -76,7 +90,13 @@ export function syncContentToDOM(content: WebsiteContent, sections: SectionSetti
   set('[data-bind="rsvp-heading"]', content.rsvp.heading);
   set('[data-bind="rsvp-deadline"]', content.rsvp.deadline);
 
-  setHtml('[data-bind="footer-names"]', content.couple.name1 + ' &amp; ' + content.couple.name2);
+  const footerNames = content.couple.name1 + ' & ' + content.couple.name2;
+  const footerEl = q('[data-bind="footer-names"]');
+  if (footerEl) {
+    footerEl.textContent = footerNames;
+  }
+  if (import.meta.env.DEV) console.log('[sync] footer-names text', '=>', footerNames);
+
   set('[data-bind="footer-date"]', content.footer.date);
   set('[data-bind="footer-tagline"]', content.footer.tagline);
 

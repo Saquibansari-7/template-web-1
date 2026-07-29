@@ -21,7 +21,7 @@ const defaultContent: WebsiteContent = {
     subtitle: 'The Wedding of',
     date: 'September 14, 2026',
     location: 'Tuscany, Italy',
-    image: '/uploads/1784113477606-dnuwel.png',
+    image: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=2000&q=80',
   },
   saveTheDate: {
     heading: "We're getting married",

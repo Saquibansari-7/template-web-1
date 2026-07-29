@@ -22,11 +22,11 @@ function normalizeImage(value: string): string {
 }
 
 export async function saveContent(siteId: string, content: WebsiteContent, sections: SectionSettings) {
-  console.log('saveContent - siteId:', siteId, 'expectedSupabaseHost:', EXPECTED_SUPABASE_HOST);
+  if (import.meta.env.DEV) console.log('saveContent - siteId:', siteId, 'expectedSupabaseHost:', EXPECTED_SUPABASE_HOST);
 
   if (!supabase || typeof supabase.from !== 'function') {
     const err = new Error('Supabase not configured - check your .env file');
-    console.error('saveContent - error:', err);
+    if (import.meta.env.DEV) console.error('saveContent - error:', err);
     throw err;
   }
 
@@ -49,6 +49,6 @@ export async function saveContent(siteId: string, content: WebsiteContent, secti
       updated_at: new Date().toISOString(),
     });
 
-  console.log('saveContent - result:', result);
+  if (import.meta.env.DEV) console.log('saveContent - result:', result);
   return result;
 }
