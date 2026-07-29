@@ -141,7 +141,7 @@
           <circle cx="22" cy="70" r="1.8" fill="#c9a96e" opacity="0.3" />
           <circle cx="118" cy="70" r="1.8" fill="#c9a96e" opacity="0.3" />
           <text x="70" y="62" text-anchor="middle" dominant-baseline="central" font-family="'Playfair Display',serif"
-            font-size="110" font-weight="400" fill="#d4c39b" filter="url(#tglow)" opacity="0.9">🅦</text>
+            font-size="70" font-weight="400" fill="#d4c39b" filter="url(#tglow)" opacity="0.9">W</text>
         </svg>
       </div>
       <div class="tap-hint" id="tap-hint"><span class="dot"></span>Tap to Open<span class="dot"></span></div>
@@ -522,22 +522,35 @@
           return;
         }
 
-        // 1) seal stamps down
         sealStage.classList.add('stamping');
-        // 2) then cracks open with a burst of light + shards
         setTimeout(function () {
           sealSvg.classList.add('cracking');
           fireShards();
           burst.classList.add('active');
           rays.classList.add('active');
         }, 420);
-        // 3) reveal the invitation
         setTimeout(finishOpening, 720);
       }
 
-      sealWrap.addEventListener('click', openInvitation);
+      function startMusic() {
+        var cd = document.getElementById('music-cd');
+        var audio = document.getElementById('site-audio');
+        if (!cd || !audio) return;
+        if (!cd.classList.contains('playing')) {
+          audio.volume = 0.35;
+          audio.play().catch(function (err) {
+            console.warn('[music-cd] play failed:', err);
+          });
+          cd.classList.add('playing');
+        }
+      }
+
+      sealWrap.addEventListener('click', function () {
+        openInvitation();
+        setTimeout(startMusic, 800);
+      });
       sealWrap.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openInvitation(); }
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openInvitation(); setTimeout(startMusic, 800); }
       });
 
       document.body.style.overflow = 'hidden';
@@ -559,9 +572,63 @@
 
       window.open("https://wa.me/" + phone + "?text=" + encodedText, '_blank');
     }
-  </script>
+    </script>
 
   <script type="module" src="/src/main.tsx"></script>
+
+  <!-- Floating music CD -->
+  <div class="music-cd-wrap" id="music-cd-wrap">
+    <div class="music-cd" id="music-cd" title="Play / Pause music">
+      <div class="music-cd-disc">
+        <div class="music-cd-label"><span>O</span></div>
+      </div>
+      <div class="music-cd-arm"></div>
+    </div>
+    <audio id="site-audio" loop preload="none">
+      <source src="./src/marmixer-wedding.mp3" type="audio/mpeg" />
+    </audio>
+  </div>
+
+  <script>
+    (function () {
+      var cdWrap = document.getElementById('music-cd-wrap');
+      var cd = document.getElementById('music-cd');
+      var audio = document.getElementById('site-audio');
+
+      console.log('[music-cd] init', { cdWrap: !!cdWrap, cd: !!cd, audio: !!audio });
+
+      if (!cd || !audio) return;
+
+      function setPlaying(state) {
+        if (state) {
+          cd.classList.add('playing');
+        } else {
+          cd.classList.remove('playing');
+        }
+      }
+
+      cd.addEventListener('click', function () {
+        console.log('[music-cd] click, current state:', cd.classList.contains('playing'));
+
+        if (cd.classList.contains('playing')) {
+          audio.pause();
+          setPlaying(false);
+          console.log('[music-cd] paused');
+        } else {
+          audio.volume = 0.35;
+          var playPromise = audio.play();
+          if (playPromise !== undefined) {
+            playPromise.then(function () {
+              console.log('[music-cd] playing');
+            }).catch(function (err) {
+              console.warn('[music-cd] play failed:', err);
+            });
+          }
+          setPlaying(true);
+        }
+      });
+    })();
+  </script>
 
 </body>
 
