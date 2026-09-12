@@ -13,6 +13,7 @@ function App() {
     syncContentToDOM(content, sections);
     initReveal();
     (window as unknown as { __WD: typeof content }).__WD = content;
+    document.documentElement.classList.remove('content-loading');
   }, [content, sections]);
 
   useEffect(() => {

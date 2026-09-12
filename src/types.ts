@@ -58,6 +58,7 @@ export interface Rsvp {
   heading: string;
   deadline: string;
   whatsapp: string;
+  backgroundImage: string;
 }
 
 export interface Footer {

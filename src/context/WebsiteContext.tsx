@@ -8,6 +8,7 @@ import { WebsiteContent, PartialWebsiteContent, SectionSettings } from '../types
 export interface WebsiteContextType {
   content: WebsiteContent;
   sections: SectionSettings;
+  isLoading: boolean;
   updateContent: (section: keyof WebsiteContent, field: string, value: unknown) => void;
   updateNestedContent: (section: keyof WebsiteContent, path: string, value: unknown) => void;
   updateSection: (sectionName: string, visible: boolean) => void;
@@ -61,6 +62,7 @@ const defaultContent: WebsiteContent = {
     heading: 'Kindly RSVP',
     deadline: 'Please reply by August 1st, 2026',
     whatsapp: '910000000000',
+    backgroundImage: 'https://images.unsplash.com/photo-1519741497674-611481863552?w=2000&q=80',
   },
   footer: {
     date: '14 . 09 . 2026',
@@ -133,14 +135,18 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
   const [content, setContent] = useState<WebsiteContent>(defaultContent);
   const [sections, setSections] = useState<SectionSettings>(defaultSections);
   const [isAdminAuthed, setIsAdminAuthed] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const siteId = getStoredSiteId();
+    let mounted = true;
 
-    if (isSupabaseConfigured()) {
-      loadContent(siteId)
-        .then((data) => {
-          if (data) {
+    async function init() {
+      const siteId = getStoredSiteId();
+
+      if (isSupabaseConfigured()) {
+        try {
+          const data = await loadContent(siteId);
+          if (mounted && data) {
             const merged = data as PartialWebsiteContent;
             setContent((prev) => ({
               ...prev,
@@ -166,11 +172,16 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
             }));
             storeSiteId(siteId);
           }
-        })
-        .catch(() => {
+        } catch {
           // Silently fail — defaults will be used
-        });
+        }
+      }
+
+      if (mounted) setIsLoading(false);
     }
+
+    init();
+    return () => { mounted = false; };
   }, []);
 
   const setNestedValue = (obj: Record<string, unknown>, path: string, value: unknown): Record<string, unknown> => {
@@ -218,6 +229,7 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
       value={{
         content,
         sections,
+        isLoading,
         updateContent,
         updateNestedContent,
         updateSection,

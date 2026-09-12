@@ -657,6 +657,15 @@ body {
   }
 }
 
+/* Prevent flash of default images before Supabase content loads */
+.content-loading img {
+  visibility: hidden;
+}
+
+.content-loading .kenburns img {
+  visibility: hidden;
+}
+
 @media (prefers-reduced-motion: reduce) {
 
   .seal-svg,

@@ -44,6 +44,16 @@ export function syncContentToDOM(content: WebsiteContent, sections: SectionSetti
     }
   };
 
+  const setAttr = (sel: string, attr: string, value: string) => {
+    const el = q(sel);
+    if (el) el.setAttribute(attr, value);
+  };
+
+  const setStyle = (sel: string, prop: string, value: string) => {
+    const el = q(sel);
+    if (el) el.style.setProperty(prop, value);
+  };
+
   set('[data-bind="name1"]', content.couple.name1);
   set('[data-bind="name2"]', content.couple.name2);
   set('[data-bind="hero-subtitle"]', content.hero.subtitle);
@@ -89,6 +99,13 @@ export function syncContentToDOM(content: WebsiteContent, sections: SectionSetti
 
   set('[data-bind="rsvp-heading"]', content.rsvp.heading);
   set('[data-bind="rsvp-deadline"]', content.rsvp.deadline);
+
+  if (content.rsvp.backgroundImage) {
+    const rsvpSection = document.getElementById('rsvp');
+    if (rsvpSection) {
+      rsvpSection.style.backgroundImage = `linear-gradient(rgba(20,18,15,0.55), rgba(20,18,15,0.55)), url('${content.rsvp.backgroundImage}')`;
+    }
+  }
 
   const footerNames = content.couple.name1 + ' & ' + content.couple.name2;
   const footerEl = q('[data-bind="footer-names"]');
@@ -142,6 +159,8 @@ export function syncContentToDOM(content: WebsiteContent, sections: SectionSetti
     const el = q(sel);
     if (el) el.style.display = sections[key] ? '' : 'none';
   }
+
+  document.documentElement.classList.remove('content-loading');
 }
 
 export function updateCountdown(targetDate: string) {
