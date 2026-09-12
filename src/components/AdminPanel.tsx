@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useWebsiteContext } from '../context/WebsiteContext';
+import { saveContentToSite } from '../services/saveContent';
 
 function AdminPanel({ onClose }: { onClose: () => void }) {
-  const { content, sections, updateContent, updateNestedContent, updateSection, saveContent, uploadImage } = useWebsiteContext();
+  const { content, sections, site, updateContent, updateNestedContent, updateSection, saveContent, uploadImage } = useWebsiteContext();
   const [toast, setToast] = useState('');
   const [local, setLocal] = useState({ ...content });
 
@@ -33,7 +34,11 @@ function AdminPanel({ onClose }: { onClose: () => void }) {
 
   const handleSave = async () => {
     try {
-      await saveContent('default', local, sections);
+      if (site) {
+        await saveContentToSite(site, local, sections);
+      } else {
+        await saveContent('default', local, sections);
+      }
       showToast('Changes saved successfully!');
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Save failed.';

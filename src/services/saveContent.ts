@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { WebsiteContent, SectionSettings } from '../types';
+import { SiteRow } from '../lib/siteResolver';
 
 const EXPECTED_SUPABASE_HOST = (() => {
   try {
@@ -51,4 +52,37 @@ export async function saveContent(siteId: string, content: WebsiteContent, secti
 
   if (import.meta.env.DEV) console.log('saveContent - result:', result);
   return result;
+}
+
+export async function saveContentToSite(site: SiteRow, content: WebsiteContent, sections: SectionSettings) {
+  const url = (import.meta.env.VITE_PUBLIC_SUPABASE_URL as string | undefined)?.trim();
+  const key = (import.meta.env.VITE_PUBLIC_SUPABASE_PUBLISHABLE_KEY as string | undefined)?.trim();
+  if (!url || !key) throw new Error('Supabase not configured');
+
+  const normalizedContent: WebsiteContent = {
+    ...content,
+    hero: { ...content.hero, image: normalizeImage(content.hero.image) },
+    story: { ...content.story, image: normalizeImage(content.story.image) },
+    invitationCard: { ...content.invitationCard, image: normalizeImage(content.invitationCard.image) },
+    gallery: { ...content.gallery, images: content.gallery.images.map(normalizeImage) },
+  };
+
+  const res = await fetch(`${url}/rest/v1/sites?id=eq.${encodeURIComponent(site.id)}`, {
+    method: 'PATCH',
+    headers: {
+      apikey: key,
+      Authorization: `Bearer ${key}`,
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    },
+    body: JSON.stringify({
+      data: { ...normalizedContent, sections },
+      updated_at: new Date().toISOString(),
+    }),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`[saveContentToSite] HTTP ${res.status}: ${text}`);
+  }
 }

@@ -1,13 +1,15 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { loadContent } from '../services/loadContent';
+import { loadContent, loadContentByCustomer } from '../services/loadContent';
 import { saveContent } from '../services/saveContent';
 import { uploadImage } from '../services/uploadImage';
 import { supabase } from '../lib/supabase';
 import { WebsiteContent, PartialWebsiteContent, SectionSettings } from '../types';
+import { SiteRow } from '../lib/siteResolver';
 
 export interface WebsiteContextType {
   content: WebsiteContent;
   sections: SectionSettings;
+  site: SiteRow | null;
   isLoading: boolean;
   updateContent: (section: keyof WebsiteContent, field: string, value: unknown) => void;
   updateNestedContent: (section: keyof WebsiteContent, path: string, value: unknown) => void;
@@ -101,6 +103,8 @@ const defaultSections: SectionSettings = {
   invitationCard: true,
 };
 
+export { defaultContent, defaultSections };
+
 const defaultSiteId = 'oliva-ben';
 
 const isSupabaseConfigured = () => {
@@ -134,6 +138,7 @@ interface WebsiteProviderProps {
 export function WebsiteProvider({ children }: WebsiteProviderProps) {
   const [content, setContent] = useState<WebsiteContent>(defaultContent);
   const [sections, setSections] = useState<SectionSettings>(defaultSections);
+  const [site, setSite] = useState<SiteRow | null>(null);
   const [isAdminAuthed, setIsAdminAuthed] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -141,9 +146,81 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
     let mounted = true;
 
     async function init() {
-      const siteId = getStoredSiteId();
+      const params = new URLSearchParams(window.location.search);
+      const customer = params.get('customer');
 
-      if (isSupabaseConfigured()) {
+      if (customer && customer.trim() && isSupabaseConfigured()) {
+        try {
+          const result = await loadContentByCustomer(customer.trim());
+          if (mounted && result) {
+            setContent(result.content);
+            setSite(result.site);
+          } else if (mounted) {
+            console.warn('[WebsiteContext] customer not found, using default site');
+            const siteId = getStoredSiteId();
+            const data = await loadContent(siteId);
+            if (data) {
+              const merged = data as PartialWebsiteContent;
+              setContent((prev) => ({
+                ...prev,
+                ...merged,
+                couple: merged.couple || prev.couple,
+                hero: { ...prev.hero, ...(merged.hero || {}) },
+                saveTheDate: { ...prev.saveTheDate, ...(merged.saveTheDate || {}) },
+                countdown: { ...prev.countdown, ...(merged.countdown || {}) },
+                story: { ...prev.story, ...(merged.story || {}) },
+                events: {
+                  ...prev.events,
+                  ...(merged.events || {}),
+                  ceremony: { ...prev.events.ceremony, ...(merged.events?.ceremony || {}) },
+                  reception: { ...prev.events.reception, ...(merged.events?.reception || {}) },
+                  mapLocation: { ...prev.events.mapLocation, ...(merged.events?.mapLocation || {}) },
+                },
+                gallery: { ...prev.gallery, ...(merged.gallery || {}) },
+                quote: { ...prev.quote, ...(merged.quote || {}) },
+                rsvp: { ...prev.rsvp, ...(merged.rsvp || {}) },
+                footer: { ...prev.footer, ...(merged.footer || {}) },
+                invitationCard: { ...prev.invitationCard, ...(merged.invitationCard || {}) },
+                sections: { ...prev.sections, ...(merged.sections || {}) },
+              }));
+            }
+          }
+        } catch (err) {
+          console.error('[WebsiteContext] customer load failed:', err);
+          const siteId = getStoredSiteId();
+          try {
+            const data = await loadContent(siteId);
+            if (mounted && data) {
+              const merged = data as PartialWebsiteContent;
+              setContent((prev) => ({
+                ...prev,
+                ...merged,
+                couple: merged.couple || prev.couple,
+                hero: { ...prev.hero, ...(merged.hero || {}) },
+                saveTheDate: { ...prev.saveTheDate, ...(merged.saveTheDate || {}) },
+                countdown: { ...prev.countdown, ...(merged.countdown || {}) },
+                story: { ...prev.story, ...(merged.story || {}) },
+                events: {
+                  ...prev.events,
+                  ...(merged.events || {}),
+                  ceremony: { ...prev.events.ceremony, ...(merged.events?.ceremony || {}) },
+                  reception: { ...prev.events.reception, ...(merged.events?.reception || {}) },
+                  mapLocation: { ...prev.events.mapLocation, ...(merged.events?.mapLocation || {}) },
+                },
+                gallery: { ...prev.gallery, ...(merged.gallery || {}) },
+                quote: { ...prev.quote, ...(merged.quote || {}) },
+                rsvp: { ...prev.rsvp, ...(merged.rsvp || {}) },
+                footer: { ...prev.footer, ...(merged.footer || {}) },
+                invitationCard: { ...prev.invitationCard, ...(merged.invitationCard || {}) },
+                sections: { ...prev.sections, ...(merged.sections || {}) },
+              }));
+            }
+          } catch {
+            // fallback to defaults
+          }
+        }
+      } else if (isSupabaseConfigured()) {
+        const siteId = getStoredSiteId();
         try {
           const data = await loadContent(siteId);
           if (mounted && data) {
@@ -229,6 +306,7 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
       value={{
         content,
         sections,
+        site,
         isLoading,
         updateContent,
         updateNestedContent,

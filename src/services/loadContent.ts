@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
-import { WebsiteContent } from '../types';
+import { WebsiteContent, PartialWebsiteContent, SectionSettings } from '../types';
+import { resolveSite, SiteRow } from '../lib/siteResolver';
 
 const EXPECTED_SUPABASE_HOST = (() => {
   try {
@@ -60,4 +61,52 @@ export async function loadContent(siteId: string) {
     console.log('[loadContent] FINAL invitationImage:', sanitized.invitationCard.image);
   }
   return sanitized;
+}
+
+export function mergeDeep<T extends object>(target: T, source: Partial<T>): T {
+  const output = { ...target };
+
+  for (const key of Object.keys(source) as Array<keyof T>) {
+    const srcVal = source[key];
+    const tgtVal = target[key];
+
+    if (
+      srcVal &&
+      typeof srcVal === 'object' &&
+      !Array.isArray(srcVal) &&
+      tgtVal &&
+      typeof tgtVal === 'object' &&
+      !Array.isArray(tgtVal)
+    ) {
+      (output as Record<string, unknown>)[String(key)] = mergeDeep(
+        tgtVal as object,
+        srcVal as object,
+      ) as T[typeof key];
+    } else if (Array.isArray(srcVal)) {
+      (output as Record<string, unknown>)[String(key)] = srcVal;
+    } else if (srcVal !== undefined) {
+      (output as Record<string, unknown>)[String(key)] = srcVal;
+    }
+  }
+
+  return output;
+}
+
+export async function loadContentByCustomer(customer: string) {
+  const url = (import.meta.env.VITE_PUBLIC_SUPABASE_URL as string | undefined)?.trim();
+  const key = (import.meta.env.VITE_PUBLIC_SUPABASE_PUBLISHABLE_KEY as string | undefined)?.trim();
+  if (!url || !key) return null;
+
+  const site = await resolveSite(customer, url, key);
+  if (!site || !site.data) return null;
+
+  const { defaultContent } = await import('../context/WebsiteContext');
+  const raw = site.data as Partial<WebsiteContent>;
+  const merged = mergeDeep(defaultContent, raw);
+
+  if (import.meta.env.DEV) {
+    console.log('[loadContentByCustomer] merged for', customer, merged.hero.image);
+  }
+
+  return { site, content: merged };
 }

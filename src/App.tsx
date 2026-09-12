@@ -5,9 +5,16 @@ import AdminLogin from './components/AdminLogin';
 import AdminPanel from './components/AdminPanel';
 
 function App() {
-  const { content, sections } = useWebsiteContext();
+  const { content, sections, site } = useWebsiteContext();
   const [adminOpen, setAdminOpen] = useState(false);
   const [adminAuthed, setAdminAuthed] = useState(false);
+
+  const viewSiteHref = (() => {
+    if (typeof window === 'undefined') return '/';
+    const params = new URLSearchParams(window.location.search);
+    const customer = params.get('customer');
+    return customer ? '/?customer=' + encodeURIComponent(customer) : '/';
+  })();
 
   useEffect(() => {
     syncContentToDOM(content, sections);
@@ -91,7 +98,7 @@ function App() {
             >
               Close
             </button>
-            <a href="/" target="_blank" style={{ color: '#888', textDecoration: 'none', padding: '8px 16px', borderRadius: 6, fontSize: 14 }}>
+            <a href={viewSiteHref} target="_blank" rel="noopener noreferrer" style={{ color: '#888', textDecoration: 'none', padding: '8px 16px', borderRadius: 6, fontSize: 14 }}>
               ↗ View Site
             </a>
           </div>
