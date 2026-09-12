@@ -1,4 +1,4 @@
-html {
+﻿html {
   scroll-behavior: smooth;
 }
 
@@ -292,6 +292,7 @@ body {
 .seal-svg {
   width: 100%;
   height: 100%;
+  object-fit: contain;
   animation: sealBreath 3.4s ease-in-out infinite;
   filter: drop-shadow(0 0 32px rgba(139, 58, 58, 0.28)) drop-shadow(0 10px 30px rgba(0, 0, 0, 0.55));
   transition: filter 0.4s ease, transform 0.4s ease;
@@ -899,128 +900,55 @@ body {
 /* ===== Floating music CD widget ===== */
 .music-cd-wrap {
   position: fixed;
-  right: 24px;
-  bottom: 24px;
+  right: 20px;
+  bottom: 20px;
   z-index: 9000;
 }
 
 .music-cd {
-  width: 110px;
-  height: 110px;
+  width: 68px;
+  height: 68px;
   position: relative;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .music-cd-disc {
   width: 100%;
   height: 100%;
-  border-radius: 50%;
-  background-color: #333;
-  background: conic-gradient(
-    from 0deg,
-    #d4d4d4 0deg,
-    #1a1a1a 20deg,
-    #d4d4d4 40deg,
-    #1a1a1a 60deg,
-    #d4d4d4 80deg,
-    #1a1a1a 100deg,
-    #d4d4d4 120deg,
-    #1a1a1a 140deg,
-    #d4d4d4 160deg,
-    #1a1a1a 180deg,
-    #d4d4d4 200deg,
-    #1a1a1a 220deg,
-    #d4d4d4 240deg,
-    #1a1a1a 260deg,
-    #d4d4d4 280deg,
-    #1a1a1a 300deg,
-    #d4d4d4 320deg,
-    #1a1a1a 340deg,
-    #d4d4d4 360deg
-  );
-  box-shadow:
-    0 0 0 3px rgba(20, 18, 15, 0.85),
-    0 0 0 5px rgba(201, 169, 110, 0.4),
-    0 16px 40px rgba(0, 0, 0, 0.55);
   position: relative;
-  overflow: hidden;
-  animation: cdSpin 4s linear infinite;
+  animation: cdSpin 3.8s linear infinite;
   animation-play-state: paused;
+  filter: drop-shadow(0 4px 14px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 0 2.5px rgba(201, 169, 110, 0.55));
+  transition: filter 0.4s ease, transform 0.4s ease;
+}
+
+.music-cd:hover .music-cd-disc {
+  filter: drop-shadow(0 6px 22px rgba(0, 0, 0, 0.55)) drop-shadow(0 0 0 3.5px rgba(212, 195, 155, 0.7));
+  transform: scale(1.08);
 }
 
 .music-cd.playing .music-cd-disc {
   animation-play-state: running;
 }
 
-/* CD rainbow sheen */
-.music-cd-disc::before {
-  content: '';
+.music-cd-icon {
   position: absolute;
   inset: 0;
-  border-radius: 50%;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 0, 0, 0.12) 0%,
-    rgba(255, 165, 0, 0.1) 15%,
-    rgba(255, 255, 0, 0.1) 30%,
-    rgba(0, 128, 0, 0.1) 45%,
-    rgba(0, 0, 255, 0.1) 60%,
-    rgba(75, 0, 130, 0.1) 75%,
-    rgba(238, 130, 238, 0.1) 100%
-  );
-  background-size: 200% 200%;
-  animation: rainbowShift 6s ease infinite;
+  width: 50%;
+  height: 50%;
+  opacity: 0;
+  transform: scale(0.7);
+  transition: opacity 0.35s ease, transform 0.35s ease;
   pointer-events: none;
 }
 
-.music-cd-disc::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-  background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%, rgba(255,255,255,0.05) 100%);
-  pointer-events: none;
-}
-
-.music-cd-label {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: radial-gradient(circle at center, rgba(139, 58, 58, 0.35) 0%, rgba(139, 58, 58, 0.15) 30%, transparent 60%);
-  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
-  z-index: 2;
-}
-
-.music-cd-label span {
-  font-family: 'Playfair Display', serif;
-  font-size: 12px;
-  color: #d4c39b;
-  letter-spacing: 0.15em;
-  opacity: 0.95;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-}
-
-.music-cd-arm {
-  position: absolute;
-  top: -14px;
-  right: -22px;
-  width: 48px;
-  height: 3px;
-  background: linear-gradient(to bottom, #c9a96e 0%, #8a7a5c 100%);
-  border-radius: 2px;
-  transform: rotate(-22deg);
-  transform-origin: right center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  pointer-events: none;
-}
-
-.music-cd.playing .music-cd-arm {
-  transform: rotate(-10deg);
+.music-cd.paused .music-cd-icon {
+  opacity: 0.9;
+  transform: scale(1);
 }
 
 @keyframes cdSpin {
@@ -1028,25 +956,14 @@ body {
   to { transform: rotate(360deg); }
 }
 
-@keyframes rainbowShift {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-}
-
 @media (max-width: 480px) {
   .music-cd {
-    width: 88px;
-    height: 88px;
-  }
-
-  .music-cd-arm {
-    width: 38px;
-    right: -18px;
-    top: -12px;
+    width: 54px;
+    height: 54px;
   }
 
   .music-cd-wrap {
-    right: 16px;
-    bottom: 16px;
+    right: 14px;
+    bottom: 14px;
   }
 }

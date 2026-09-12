@@ -99,7 +99,7 @@ const defaultSections: SectionSettings = {
   invitationCard: true,
 };
 
-const defaultSiteId = 'default';
+const defaultSiteId = 'oliva-ben';
 
 const isSupabaseConfigured = () => {
   return !!supabase && typeof supabase.from === 'function';

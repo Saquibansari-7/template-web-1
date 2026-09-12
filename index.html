@@ -100,49 +100,7 @@
         <!-- Seal shards (JS populated) -->
         <div class="shard-container" id="shard-container"></div>
 
-        <svg class="seal-svg" id="seal-svg" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <radialGradient id="sg" cx="38%" cy="30%" r="62%">
-              <stop offset="0%" stop-color="#c4655a" />
-              <stop offset="40%" stop-color="#8B3A3A" />
-              <stop offset="100%" stop-color="#3e1515" />
-            </radialGradient>
-            <radialGradient id="sg-shine" cx="30%" cy="25%" r="35%">
-              <stop offset="0%" stop-color="rgba(255,220,180,0.22)" />
-              <stop offset="100%" stop-color="transparent" />
-            </radialGradient>
-            <filter id="wt" x="-10%" y="-10%" width="120%" height="120%">
-              <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="4" seed="3" result="n" />
-              <feDisplacementMap in="SourceGraphic" in2="n" scale="4" xChannelSelector="R" yChannelSelector="G" />
-            </filter>
-            <filter id="tglow">
-              <feGaussianBlur stdDeviation="1.2" result="b" />
-              <feMerge>
-                <feMergeNode in="b" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
-          </defs>
-          <circle cx="70" cy="6" r="5" fill="#7a2e2e" opacity="0.5" />
-          <circle cx="128" cy="42" r="4" fill="#8B3A3A" opacity="0.45" />
-          <circle cx="134" cy="72" r="3.5" fill="#7a2e2e" opacity="0.35" />
-          <circle cx="115" cy="125" r="4.5" fill="#8B3A3A" opacity="0.4" />
-          <circle cx="22" cy="128" r="3.5" fill="#7a2e2e" opacity="0.45" />
-          <circle cx="6" cy="85" r="4" fill="#8B3A3A" opacity="0.35" />
-          <circle cx="10" cy="48" r="3" fill="#7a2e2e" opacity="0.4" />
-          <circle cx="45" cy="134" r="3" fill="#8B3A3A" opacity="0.3" />
-          <circle cx="70" cy="70" r="60" fill="url(#sg)" filter="url(#wt)" />
-          <circle cx="70" cy="70" r="60" fill="url(#sg-shine)" />
-          <circle cx="70" cy="70" r="60" fill="none" stroke="rgba(255,225,185,0.14)" stroke-width="2" />
-          <circle cx="70" cy="70" r="48" fill="none" stroke="#c9a96e" stroke-width="0.7" opacity="0.35" />
-          <circle cx="70" cy="70" r="46" fill="none" stroke="#c9a96e" stroke-width="0.3" opacity="0.2" />
-          <circle cx="70" cy="22" r="1.8" fill="#c9a96e" opacity="0.3" />
-          <circle cx="70" cy="118" r="1.8" fill="#c9a96e" opacity="0.3" />
-          <circle cx="22" cy="70" r="1.8" fill="#c9a96e" opacity="0.3" />
-          <circle cx="118" cy="70" r="1.8" fill="#c9a96e" opacity="0.3" />
-          <text x="70" y="62" text-anchor="middle" dominant-baseline="central" font-family="'Playfair Display',serif"
-            font-size="70" font-weight="400" fill="#d4c39b" filter="url(#tglow)" opacity="0.9">W</text>
-        </svg>
+        <img class="seal-svg" id="seal-svg" src="c-stamp-web.png" alt="Wedding Seal">
       </div>
       <div class="tap-hint" id="tap-hint"><span class="dot"></span>Tap to Open<span class="dot"></span></div>
     </div>
@@ -578,14 +536,34 @@
 
   <!-- Floating music CD -->
   <div class="music-cd-wrap" id="music-cd-wrap">
-    <div class="music-cd" id="music-cd" title="Play / Pause music">
-      <div class="music-cd-disc">
-        <div class="music-cd-label"><span>O</span></div>
-      </div>
-      <div class="music-cd-arm"></div>
+    <div class="music-cd" id="music-cd" title="Play / Pause music" role="button" aria-label="Play or pause music" tabindex="0">
+      <svg class="music-cd-disc" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="49" fill="#1a1816" />
+        <circle cx="50" cy="50" r="47" fill="none" stroke="rgba(201,169,110,0.08)" stroke-width="0.5" />
+        <circle cx="50" cy="50" r="44" fill="none" stroke="rgba(201,169,110,0.12)" stroke-width="0.4" />
+        <circle cx="50" cy="50" r="41" fill="none" stroke="rgba(201,169,110,0.1)" stroke-width="0.4" />
+        <circle cx="50" cy="50" r="38" fill="none" stroke="rgba(201,169,110,0.08)" stroke-width="0.4" />
+        <circle cx="50" cy="50" r="35" fill="none" stroke="rgba(201,169,110,0.06)" stroke-width="0.4" />
+        <circle cx="50" cy="50" r="32" fill="none" stroke="rgba(201,169,110,0.1)" stroke-width="0.4" />
+        <circle cx="50" cy="50" r="29" fill="none" stroke="rgba(201,169,110,0.08)" stroke-width="0.4" />
+        <circle cx="50" cy="50" r="26" fill="none" stroke="rgba(201,169,110,0.06)" stroke-width="0.4" />
+        <circle cx="50" cy="50" r="23" fill="none" stroke="rgba(201,169,110,0.1)" stroke-width="0.4" />
+        <circle cx="50" cy="50" r="20" fill="none" stroke="rgba(201,169,110,0.08)" stroke-width="0.4" />
+        <circle cx="50" cy="50" r="18" fill="none" stroke="rgba(212,195,155,0.15)" stroke-width="0.6" />
+        <circle cx="50" cy="50" r="14" fill="none" stroke="rgba(212,195,155,0.1)" stroke-width="0.3" />
+        <circle cx="50" cy="50" r="11" fill="url(#cd-label)" />
+        <circle cx="50" cy="50" r="2.5" fill="#1a1816" />
+        <defs>
+          <radialGradient id="cd-label" cx="38%" cy="32%" r="62%">
+            <stop offset="0%" stop-color="#d4c39b" />
+            <stop offset="55%" stop-color="#8a7a5c" />
+            <stop offset="100%" stop-color="#4a3f33" />
+          </radialGradient>
+        </defs>
+      </svg>
     </div>
     <audio id="site-audio" loop preload="none">
-      <source src="./src/marmixer-wedding.mp3" type="audio/mpeg" />
+      <source src="./src/wedding-music.mp3" type="audio/mpeg" />
     </audio>
   </div>
 
@@ -602,8 +580,10 @@
       function setPlaying(state) {
         if (state) {
           cd.classList.add('playing');
+          cd.classList.remove('paused');
         } else {
           cd.classList.remove('playing');
+          cd.classList.add('paused');
         }
       }
 
@@ -625,6 +605,13 @@
             });
           }
           setPlaying(true);
+        }
+      });
+
+      cd.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          cd.click();
         }
       });
     })();
