@@ -4,6 +4,30 @@ import { syncContentToDOM, initReveal, updateCountdown } from './utils/contentSy
 import AdminLogin from './components/AdminLogin';
 import AdminPanel from './components/AdminPanel';
 
+const ADMIN_API_URL = 'https://weddappvows.vercel.app';
+const EXPECTED_ADMIN_TEMPLATE_ID = 'minimal';
+const ADMIN_SUBDOMAIN_REGEX = /^[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?$/;
+
+async function validateAdminCustomer(customer: string): Promise<boolean> {
+  const trimmed = (customer || '').trim().toLowerCase();
+  if (!trimmed || !ADMIN_SUBDOMAIN_REGEX.test(trimmed)) {
+    return false;
+  }
+
+  try {
+    const res = await fetch(
+      `${ADMIN_API_URL}/api/site/lookup?customer=${encodeURIComponent(trimmed)}`,
+    );
+    if (!res.ok) {
+      return false;
+    }
+    const site = (await res.json()) as { template_id?: string; status?: string };
+    return site.template_id === EXPECTED_ADMIN_TEMPLATE_ID && site.status === 'active';
+  } catch {
+    return false;
+  }
+}
+
 function App() {
   const { content, sections, site } = useWebsiteContext();
   const [adminOpen, setAdminOpen] = useState(false);
@@ -45,10 +69,25 @@ function App() {
 
   useEffect(() => {
     const path = window.location.pathname || '';
-    if (path.startsWith('/admin')) {
-      if (import.meta.env.DEV) console.log('[wedding] /admin detected, opening admin panel');
-      setAdminOpen(true);
+    if (!path.startsWith('/admin')) {
+      return;
     }
+
+    const params = new URLSearchParams(window.location.search);
+    const customer = params.get('customer');
+
+    if (!customer) {
+      setAdminOpen(true);
+      return;
+    }
+
+    validateAdminCustomer(customer).then((valid) => {
+      if (valid) {
+        setAdminOpen(true);
+      } else {
+        window.location.href = `${ADMIN_API_URL}/dashboard?error=invalid_customer`;
+      }
+    });
   }, []);
 
   if (!adminOpen) {
