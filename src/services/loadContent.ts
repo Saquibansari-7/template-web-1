@@ -93,11 +93,7 @@ export function mergeDeep<T extends object>(target: T, source: Partial<T>): T {
 }
 
 export async function loadContentByCustomer(customer: string) {
-  const url = (import.meta.env.VITE_PUBLIC_SUPABASE_URL as string | undefined)?.trim();
-  const key = (import.meta.env.VITE_PUBLIC_SUPABASE_PUBLISHABLE_KEY as string | undefined)?.trim();
-  if (!url || !key) return null;
-
-  const site = await resolveSite(customer, url, key);
+  const site = await resolveSite(customer);
   if (!site || !site.data) return null;
 
   const { defaultContent } = await import('../context/WebsiteContext');

@@ -107,6 +107,22 @@ export { defaultContent, defaultSections };
 
 const defaultSiteId = 'oliva-ben';
 
+function show404() {
+  document.documentElement.classList.add('not-found');
+  const openingOverlay = document.getElementById('opening-overlay');
+  if (openingOverlay) {
+    openingOverlay.style.display = 'none';
+  }
+  document.querySelectorAll('section, footer').forEach((el) => {
+    (el as HTMLElement).style.display = 'none';
+  });
+  const overlay = document.createElement('div');
+  overlay.id = 'not-found-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:9999;background:#111;color:#ccc;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:system-ui,sans-serif;';
+  overlay.innerHTML = '<h1 style="font-size:48px;margin-bottom:16px;color:#c9a84c;">404</h1><p style="font-size:18px;opacity:0.8;">Wedding site not found</p>';
+  document.body.appendChild(overlay);
+}
+
 const isSupabaseConfigured = () => {
   return !!supabase && typeof supabase.from === 'function';
 };
@@ -149,75 +165,18 @@ export function WebsiteProvider({ children }: WebsiteProviderProps) {
       const params = new URLSearchParams(window.location.search);
       const customer = params.get('customer');
 
-      if (customer && customer.trim() && isSupabaseConfigured()) {
+      if (customer && customer.trim()) {
         try {
           const result = await loadContentByCustomer(customer.trim());
           if (mounted && result) {
             setContent(result.content);
             setSite(result.site);
           } else if (mounted) {
-            console.warn('[WebsiteContext] customer not found, using default site');
-            const siteId = getStoredSiteId();
-            const data = await loadContent(siteId);
-            if (data) {
-              const merged = data as PartialWebsiteContent;
-              setContent((prev) => ({
-                ...prev,
-                ...merged,
-                couple: merged.couple || prev.couple,
-                hero: { ...prev.hero, ...(merged.hero || {}) },
-                saveTheDate: { ...prev.saveTheDate, ...(merged.saveTheDate || {}) },
-                countdown: { ...prev.countdown, ...(merged.countdown || {}) },
-                story: { ...prev.story, ...(merged.story || {}) },
-                events: {
-                  ...prev.events,
-                  ...(merged.events || {}),
-                  ceremony: { ...prev.events.ceremony, ...(merged.events?.ceremony || {}) },
-                  reception: { ...prev.events.reception, ...(merged.events?.reception || {}) },
-                  mapLocation: { ...prev.events.mapLocation, ...(merged.events?.mapLocation || {}) },
-                },
-                gallery: { ...prev.gallery, ...(merged.gallery || {}) },
-                quote: { ...prev.quote, ...(merged.quote || {}) },
-                rsvp: { ...prev.rsvp, ...(merged.rsvp || {}) },
-                footer: { ...prev.footer, ...(merged.footer || {}) },
-                invitationCard: { ...prev.invitationCard, ...(merged.invitationCard || {}) },
-                sections: { ...prev.sections, ...(merged.sections || {}) },
-              }));
-            }
+            show404();
           }
         } catch (err) {
           console.error('[WebsiteContext] customer load failed:', err);
-          const siteId = getStoredSiteId();
-          try {
-            const data = await loadContent(siteId);
-            if (mounted && data) {
-              const merged = data as PartialWebsiteContent;
-              setContent((prev) => ({
-                ...prev,
-                ...merged,
-                couple: merged.couple || prev.couple,
-                hero: { ...prev.hero, ...(merged.hero || {}) },
-                saveTheDate: { ...prev.saveTheDate, ...(merged.saveTheDate || {}) },
-                countdown: { ...prev.countdown, ...(merged.countdown || {}) },
-                story: { ...prev.story, ...(merged.story || {}) },
-                events: {
-                  ...prev.events,
-                  ...(merged.events || {}),
-                  ceremony: { ...prev.events.ceremony, ...(merged.events?.ceremony || {}) },
-                  reception: { ...prev.events.reception, ...(merged.events?.reception || {}) },
-                  mapLocation: { ...prev.events.mapLocation, ...(merged.events?.mapLocation || {}) },
-                },
-                gallery: { ...prev.gallery, ...(merged.gallery || {}) },
-                quote: { ...prev.quote, ...(merged.quote || {}) },
-                rsvp: { ...prev.rsvp, ...(merged.rsvp || {}) },
-                footer: { ...prev.footer, ...(merged.footer || {}) },
-                invitationCard: { ...prev.invitationCard, ...(merged.invitationCard || {}) },
-                sections: { ...prev.sections, ...(merged.sections || {}) },
-              }));
-            }
-          } catch {
-            // fallback to defaults
-          }
+          if (mounted) show404();
         }
       } else if (isSupabaseConfigured()) {
         const siteId = getStoredSiteId();
