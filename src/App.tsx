@@ -4,26 +4,29 @@ import { syncContentToDOM, initReveal, updateCountdown } from './utils/contentSy
 import AdminLogin from './components/AdminLogin';
 import AdminPanel from './components/AdminPanel';
 
-const ADMIN_API_URL = 'https://weddappvows.vercel.app';
-const EXPECTED_ADMIN_TEMPLATE_ID = 'minimal';
-const ADMIN_SUBDOMAIN_REGEX = /^[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?$/;
-
 async function validateAdminCustomer(customer: string): Promise<boolean> {
-  const trimmed = (customer || '').trim().toLowerCase();
-  if (!trimmed || !ADMIN_SUBDOMAIN_REGEX.test(trimmed)) {
+  const trimmed = (customer || '').toLowerCase().trim();
+  const SUBDOMAIN_REGEX = /^[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?$/;
+
+  if (!trimmed || !SUBDOMAIN_REGEX.test(trimmed)) {
+    window.location.href = 'https://weddappvows.vercel.app/dashboard?error=invalid_customer';
     return false;
   }
 
   try {
-    const res = await fetch(
-      `${ADMIN_API_URL}/api/site/lookup?customer=${encodeURIComponent(trimmed)}`,
-    );
+    const res = await fetch(`https://weddappvows.vercel.app/api/site/lookup?customer=${encodeURIComponent(trimmed)}`);
     if (!res.ok) {
+      window.location.href = 'https://weddappvows.vercel.app/dashboard?error=site_not_found';
       return false;
     }
-    const site = (await res.json()) as { template_id?: string; status?: string };
-    return site.template_id === EXPECTED_ADMIN_TEMPLATE_ID && site.status === 'active';
+    const site = await res.json();
+    if (site.template_id !== 'minimal') {
+      window.location.href = 'https://weddappvows.vercel.app/dashboard?error=wrong_template';
+      return false;
+    }
+    return true;
   } catch {
+    window.location.href = 'https://weddappvows.vercel.app/dashboard?error=invalid_customer';
     return false;
   }
 }
@@ -58,8 +61,15 @@ function App() {
   }, [content.countdown.targetDate]);
 
   useEffect(() => {
-    const handleKey = (e: KeyboardEvent) => {
+    const handleKey = async (e: KeyboardEvent) => {
       if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'a') {
+        e.preventDefault();
+        const params = new URLSearchParams(window.location.search);
+        const customer = params.get('customer');
+        if (customer) {
+          const valid = await validateAdminCustomer(customer);
+          if (!valid) return;
+        }
         setAdminOpen((prev) => !prev);
       }
     };
@@ -68,26 +78,27 @@ function App() {
   }, []);
 
   useEffect(() => {
-    const path = window.location.pathname || '';
-    if (!path.startsWith('/admin')) {
-      return;
-    }
+    async function checkAdminAccess() {
+      const path = window.location.pathname || '';
+      if (!path.startsWith('/admin')) {
+        return;
+      }
 
-    const params = new URLSearchParams(window.location.search);
-    const customer = params.get('customer');
+      const params = new URLSearchParams(window.location.search);
+      const customer = params.get('customer');
 
-    if (!customer) {
-      setAdminOpen(true);
-      return;
-    }
+      if (!customer) {
+        setAdminOpen(true);
+        return;
+      }
 
-    validateAdminCustomer(customer).then((valid) => {
+      const valid = await validateAdminCustomer(customer);
       if (valid) {
         setAdminOpen(true);
-      } else {
-        window.location.href = `${ADMIN_API_URL}/dashboard?error=invalid_customer`;
       }
-    });
+    }
+
+    checkAdminAccess();
   }, []);
 
   if (!adminOpen) {
