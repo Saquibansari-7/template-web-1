@@ -657,9 +657,19 @@ function AdminPanel({ onClose }: { onClose: () => void }) {
             multiple
             onChange={async (e) => {
               const files = Array.from(e.target.files || []);
-              for (const file of files) {
+              const MAX_GALLERY_IMAGES = 15;
+              const remaining = MAX_GALLERY_IMAGES - local.gallery.images.length;
+              if (remaining <= 0) {
+                showToast(`Gallery is full. Maximum ${MAX_GALLERY_IMAGES} images.`);
+                return;
+              }
+              const toUpload = files.slice(0, remaining);
+              for (const file of toUpload) {
                 const url = await handleFileUpload('default', file);
                 if (url) setLocal({ ...local, gallery: { ...local.gallery, images: [...local.gallery.images, url] } });
+              }
+              if (files.length > remaining) {
+                showToast(`Only ${remaining} more image(s) added. Gallery limited to ${MAX_GALLERY_IMAGES}.`);
               }
             }}
             style={{ color: '#ccc', fontSize: 14 }}

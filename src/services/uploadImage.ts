@@ -1,5 +1,9 @@
 import { supabase } from '../lib/supabase';
 
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+
 export async function uploadImage(siteId: string, file: File): Promise<string | null> {
   if (!supabase || typeof supabase.from !== 'function' || !supabase.storage) {
     const err = new Error('Supabase is not configured. Check VITE_PUBLIC_SUPABASE_URL / VITE_PUBLIC_SUPABASE_PUBLISHABLE_KEY.');
@@ -7,7 +11,18 @@ export async function uploadImage(siteId: string, file: File): Promise<string | 
     throw err;
   }
 
-  const fileExt = file.name.split('.').pop()?.toLowerCase() || 'bin';
+  if (file.size > MAX_FILE_SIZE) {
+    const err = new Error(`Image must be 5MB or smaller. Your file is ${(file.size / 1024 / 1024).toFixed(1)}MB.`);
+    if (import.meta.env.DEV) console.error('[uploadImage]', err.message);
+    throw err;
+  }
+
+  const fileExt = (file.name.split('.').pop() || '').toLowerCase();
+  if (!ALLOWED_TYPES.includes(file.type) || !ALLOWED_EXTENSIONS.includes(fileExt)) {
+    const err = new Error(`Only JPG, PNG, WebP, and GIF images are allowed.`);
+    if (import.meta.env.DEV) console.error('[uploadImage]', err.message);
+    throw err;
+  }
   const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${fileExt}`;
   const filePath = `${siteId}/${fileName}`;
 
