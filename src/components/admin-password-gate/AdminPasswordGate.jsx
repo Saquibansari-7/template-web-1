@@ -82,7 +82,11 @@ export default function AdminPasswordGate({ customer, children }) {
   if (step === "error") {
     return (
       <div className={styles.gate}>
-        <p className={styles.error}>{error}</p>
+        <div className={styles.card}>
+          <div className={styles.icon}>⚠️</div>
+          <h2>Unable to load admin</h2>
+          <p className={styles.error}>{error}</p>
+        </div>
       </div>
     );
   }
@@ -105,6 +109,7 @@ export default function AdminPasswordGate({ customer, children }) {
   return (
     <div className={styles.gate}>
       <div className={styles.card}>
+        <div className={styles.icon}>✦</div>
         <h2>Admin Access</h2>
 
         {step === "set" && (
@@ -131,13 +136,15 @@ export default function AdminPasswordGate({ customer, children }) {
               </button>
             </div>
 
-            <input
-              type={showPwd ? "text" : "password"}
-              placeholder="Confirm password"
-              value={confirm}
-              onChange={(e) => setConfirm(e.target.value)}
-              autoComplete="new-password"
-            />
+            <div className={styles.field}>
+              <input
+                type={showPwd ? "text" : "password"}
+                placeholder="Confirm password"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                autoComplete="new-password"
+              />
+            </div>
 
             {master && (
               <p className={styles.hint}>
