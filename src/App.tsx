@@ -1,32 +1,47 @@
 import { useEffect, useState } from 'react';
 import { useWebsiteContext } from './context/WebsiteContext';
 import { syncContentToDOM, initReveal, updateCountdown } from './utils/contentSync';
-import AdminLogin from './components/AdminLogin';
 import AdminPanel from './components/AdminPanel';
+// @ts-ignore - AdminPasswordGate is a JSX component without TypeScript declarations
+import AdminPasswordGate from './components/admin-password-gate/AdminPasswordGate';
 
 async function validateAdminCustomer(customer: string): Promise<boolean> {
   const trimmed = (customer || '').toLowerCase().trim();
   const SUBDOMAIN_REGEX = /^[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?$/;
 
   if (!trimmed || !SUBDOMAIN_REGEX.test(trimmed)) {
-    window.location.href = 'https://weddappvows.vercel.app/dashboard?error=invalid_customer';
+    if (!import.meta.env.DEV) {
+      window.location.href = 'https://weddappvows.vercel.app/dashboard?error=invalid_customer';
+    }
     return false;
   }
 
   try {
     const res = await fetch(`https://weddappvows.vercel.app/api/site/lookup?customer=${encodeURIComponent(trimmed)}`);
     if (!res.ok) {
-      window.location.href = 'https://weddappvows.vercel.app/dashboard?error=site_not_found';
+      if (!import.meta.env.DEV) {
+        window.location.href = 'https://weddappvows.vercel.app/dashboard?error=site_not_found';
+      }
       return false;
     }
     const site = await res.json();
     if (site.template_id !== 'minimal') {
-      window.location.href = 'https://weddappvows.vercel.app/dashboard?error=wrong_template';
+      if (!import.meta.env.DEV) {
+        window.location.href = 'https://weddappvows.vercel.app/dashboard?error=wrong_template';
+      }
+      return false;
+    }
+    if (site.status !== 'active') {
+      if (!import.meta.env.DEV) {
+        window.location.href = 'https://weddappvows.vercel.app/dashboard?error=site_inactive';
+      }
       return false;
     }
     return true;
   } catch {
-    window.location.href = 'https://weddappvows.vercel.app/dashboard?error=invalid_customer';
+    if (!import.meta.env.DEV) {
+      window.location.href = 'https://weddappvows.vercel.app/dashboard?error=validation_failed';
+    }
     return false;
   }
 }
@@ -34,7 +49,7 @@ async function validateAdminCustomer(customer: string): Promise<boolean> {
 function App() {
   const { content, sections, site } = useWebsiteContext();
   const [adminOpen, setAdminOpen] = useState(false);
-  const [adminAuthed, setAdminAuthed] = useState(false);
+  const [customer, setCustomer] = useState<string | null>(null);
 
   const viewSiteHref = (() => {
     if (typeof window === 'undefined') return '/';
@@ -94,6 +109,7 @@ function App() {
 
       const valid = await validateAdminCustomer(customer);
       if (valid) {
+        setCustomer(customer);
         setAdminOpen(true);
       }
     }
@@ -133,7 +149,6 @@ function App() {
           <div style={{ display: 'flex', gap: 8 }}>
             <button
               onClick={() => {
-                setAdminAuthed(false);
                 setAdminOpen(false);
               }}
               style={{
@@ -153,11 +168,9 @@ function App() {
             </a>
           </div>
         </div>
-        {adminAuthed ? (
-          <AdminPanel onClose={() => { setAdminAuthed(false); setAdminOpen(false); }} />
-        ) : (
-          <AdminLogin onLogin={() => setAdminAuthed(true)} />
-        )}
+        <AdminPasswordGate customer={customer || ''}>
+          <AdminPanel onClose={() => { setAdminOpen(false); }} />
+        </AdminPasswordGate>
       </div>
     </div>
   );
