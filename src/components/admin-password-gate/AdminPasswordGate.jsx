@@ -92,18 +92,7 @@ export default function AdminPasswordGate({ customer, children }) {
   }
 
   if (step === "authenticated") {
-    return (
-      <>
-        {children}
-        <button
-          type="button"
-          className={styles.changeLink}
-          onClick={resetPassword}
-        >
-          Change admin password
-        </button>
-      </>
-    );
+    return <>{children}</>;
   }
 
   return (

@@ -163,6 +163,24 @@ function App() {
             >
               Close
             </button>
+            <button
+              onClick={() => {
+                localStorage.removeItem(`admin_pass_${customer || ''}`);
+                window.location.reload();
+              }}
+              style={{
+                background: 'transparent',
+                color: '#888',
+                border: '1px solid #555',
+                borderRadius: 6,
+                padding: '8px 16px',
+                fontSize: 12,
+                cursor: 'pointer',
+              }}
+              title="Clear saved password"
+            >
+              Change Password
+            </button>
             <a href={viewSiteHref} target="_blank" rel="noopener noreferrer" style={{ color: '#888', textDecoration: 'none', padding: '8px 16px', borderRadius: 6, fontSize: 14 }}>
               ↗ View Site
             </a>
