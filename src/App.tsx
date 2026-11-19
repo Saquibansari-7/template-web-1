@@ -11,36 +11,36 @@ async function validateAdminCustomer(customer: string): Promise<boolean> {
 
   if (!trimmed || !SUBDOMAIN_REGEX.test(trimmed)) {
     if (!import.meta.env.DEV) {
-      window.location.href = 'https://weddappvows.vercel.app/dashboard?error=invalid_customer';
+      window.location.href = 'https://weddrusi.vercel.app/dashboard?error=invalid_customer';
     }
     return false;
   }
 
   try {
-    const res = await fetch(`https://weddappvows.vercel.app/api/site/lookup?customer=${encodeURIComponent(trimmed)}`);
+    const res = await fetch(`https://weddrusi.vercel.app/api/site/lookup?customer=${encodeURIComponent(trimmed)}`);
     if (!res.ok) {
       if (!import.meta.env.DEV) {
-        window.location.href = 'https://weddappvows.vercel.app/dashboard?error=site_not_found';
+        window.location.href = 'https://weddrusi.vercel.app/dashboard?error=site_not_found';
       }
       return false;
     }
     const site = await res.json();
     if (site.template_id !== 'minimal') {
       if (!import.meta.env.DEV) {
-        window.location.href = 'https://weddappvows.vercel.app/dashboard?error=wrong_template';
+        window.location.href = 'https://weddrusi.vercel.app/dashboard?error=wrong_template';
       }
       return false;
     }
     if (site.status !== 'active') {
       if (!import.meta.env.DEV) {
-        window.location.href = 'https://weddappvows.vercel.app/dashboard?error=site_inactive';
+        window.location.href = 'https://weddrusi.vercel.app/dashboard?error=site_inactive';
       }
       return false;
     }
     return true;
   } catch {
     if (!import.meta.env.DEV) {
-      window.location.href = 'https://weddappvows.vercel.app/dashboard?error=validation_failed';
+      window.location.href = 'https://weddrusi.vercel.app/dashboard?error=validation_failed';
     }
     return false;
   }
