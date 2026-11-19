@@ -5,7 +5,7 @@ export interface SiteRow {
   [key: string]: unknown;
 }
 
-const MAIN_APP_URL = 'https://weddappvows.vercel.app';
+const MAIN_APP_URL = 'https://weddrusi.vercel.app';
 const EXPECTED_TEMPLATE_ID = 'minimal';
 const SUBDOMAIN_REGEX = /^[a-z0-9](?:[a-z0-9-]{0,58}[a-z0-9])?$/;
 

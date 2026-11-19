@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import styles from "./admin-password-gate.module.css";
 
-const CONFIG_URL = "https://weddappvows.vercel.app/api/admin/config";
+const CONFIG_URL = "https://weddrusi.vercel.app/api/admin/config";
 
 export default function AdminPasswordGate({ customer, children }) {
   const storageKey = `admin_pass_${customer}`;

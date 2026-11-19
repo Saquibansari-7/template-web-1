@@ -8,7 +8,7 @@ interface AdminLoginProps {
 
 const MAX_ATTEMPTS = 5;
 const LOCKOUT_MS = 30_000;
-const VERIFY_API = 'https://weddappvows.vercel.app/api/admin/verify-password';
+const VERIFY_API = 'https://weddrusi.vercel.app/api/admin/verify-password';
 
 function setCookie(name: string, value: string, days = 7) {
   try {
